@@ -36,15 +36,17 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 
 - HTML, CSS e JavaScript puro, em arquivo único, sem etapa de build.
 - [Three.js](https://threejs.org/) r128 (renderização 3D, OrbitControls e pós-processamento).
-- [Tailwind CSS](https://tailwindcss.com/) via CDN.
-- Fontes Inter e JetBrains Mono (Google Fonts).
+- [Tailwind CSS](https://tailwindcss.com/) 3.4.17 (script do Play CDN).
+- Fontes Inter e JetBrains Mono.
+
+Todas as dependências estão versionadas na pasta `vendor/`, portanto o projeto funciona sem acesso a CDNs externos.
 
 ## Como executar
 
 1. Clone o repositório.
 2. Abra o arquivo `index.html` em um navegador moderno.
 
-É necessária conexão com a internet para o carregamento das bibliotecas via CDN.
+Não é necessária conexão com a internet, pois as bibliotecas e fontes estão em `vendor/`.
 
 ## Estrutura do repositório
 
@@ -55,6 +57,7 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 | `README.md` | Este documento |
 | `CONTRIBUTING.md` | Orientações para contribuição |
 | `LICENSE` | Licença MIT |
+| `vendor/` | Bibliotecas e fontes locais (Three.js, Tailwind, Inter, JetBrains Mono) |
 | `docs/ARQUITETURA.md` | Visão técnica do código |
 
 ## Aviso

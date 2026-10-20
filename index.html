@@ -4,22 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeuroSim 3D — Como Funcionam as Drogas no Cérebro</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter & JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (local) -->
+    <script src="vendor/tailwind.js"></script>
+    <!-- Fontes locais: Inter e JetBrains Mono -->
+    <link rel="stylesheet" href="vendor/fonts.css">
     
-    <!-- Three.js r128 & Post-Processing / Controls via CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <!-- Three.js r128, post-processing e controles (local) -->
+    <script src="vendor/three/three.min.js"></script>
+    <script src="vendor/three/OrbitControls.js"></script>
+    <script src="vendor/three/EffectComposer.js"></script>
+    <script src="vendor/three/RenderPass.js"></script>
+    <script src="vendor/three/ShaderPass.js"></script>
+    <script src="vendor/three/CopyShader.js"></script>
+    <script src="vendor/three/LuminosityHighPassShader.js"></script>
+    <script src="vendor/three/UnrealBloomPass.js"></script>
 
     <style>
         :root {
