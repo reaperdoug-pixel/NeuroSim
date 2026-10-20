@@ -2,6 +2,8 @@
 
 Simulador educativo e interativo em 3D que demonstra, em tempo real, o que ocorre no circuito de recompensa do cérebro durante o consumo de diferentes substâncias e em comportamentos de risco, como apostas eletrônicas.
 
+**Acesse online:** [neurosim.degehub.io](https://neurosim.degehub.io)
+
 ## Visão geral
 
 O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente e uma curva dopaminérgica dinâmica para cada substância, permitindo observar as fases de absorção, pico e queda (crash). O objetivo é puramente didático, voltado a público leigo.
