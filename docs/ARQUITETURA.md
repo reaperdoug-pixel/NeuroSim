@@ -5,7 +5,7 @@ O NeuroSim 3D é composto por um único arquivo, `index.html`, dividido em marca
 ## Dependências (locais, em `vendor/`)
 
 - Three.js r128, OrbitControls, EffectComposer, RenderPass, ShaderPass, CopyShader, LuminosityHighPassShader e UnrealBloomPass.
-- Tailwind CSS e Google Fonts.
+- Tailwind CSS 3.4.17 (Play CDN) e fontes Inter e JetBrains Mono (latin e latin-ext).
 
 ## Organização do JavaScript
 
