@@ -52,6 +52,7 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 | `manual_de_uso.md` | Manual de uso para o usuário final |
 | `README.md` | Este documento |
 | `CONTRIBUTING.md` | Orientações para contribuição |
+| `LICENSE` | Licença MIT |
 | `docs/ARQUITETURA.md` | Visão técnica do código |
 
 ## Aviso
@@ -60,4 +61,4 @@ Este projeto possui finalidade exclusivamente educacional. Os modelos são simpl
 
 ## Licença
 
-Licença ainda não definida. Defina uma antes de aceitar contribuições externas.
+Distribuído sob a licença MIT. Consulte o arquivo [`LICENSE`](LICENSE) para mais detalhes.
