@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSim 3D — Como Funcionam as Drogas no Cérebro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js r128 & Post-Processing / Controls via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #0A0E17;
+        }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0A0E17;
+            font-family: 'Inter', sans-serif;
+            color: #F8FAFC;
+        }
+        .font-mono-tech {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at 50% 45%, #131c31 0%, #0A0E17 72%);
+        }
+        /* Holographic Grid Overlay */
+        .holo-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            background-image: 
+                linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 90%);
+        }
+        /* Glassmorphism HUD Panels */
+        .hud-panel {
+            background: rgba(11, 17, 30, 0.78);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+        }
+        /* Custom Range Slider */
+        input[type="range"].neuro-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 999px;
+            outline: none;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        input[type="range"].neuro-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #38BDF8;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type="range"].neuro-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.18);
+        }
+        /* 3D Floating Anatomical Pins */
+        .brain-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: opacity 0.25s ease, transform 0.2s ease;
+            z-index: 5;
+        }
+        .brain-label:hover {
+            transform: translate(-50%, -50%) scale(1.06);
+        }
+        /* Crash Alert Pulse */
+        @keyframes crashPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.55), inset 0 0 15px rgba(244, 63, 94, 0.25);
+                border-color: rgba(244, 63, 94, 0.85);
+            }
+            50% {
+                box-shadow: 0 0 22px 4px rgba(244, 63, 94, 0.35), inset 0 0 25px rgba(244, 63, 94, 0.45);
+                border-color: rgba(251, 113, 133, 1);
+            }
+        }
+        .crash-active {
+            animation: crashPulse 1.4s infinite ease-in-out;
+        }
+        /* Custom Scrollbar for inner panels on small screens */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.5);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="relative select-none">
+
+    <!-- 3D WebGL Canvas Container -->
+    <div id="canvas-container"></div>
+    <div class="holo-grid"></div>
+
+    <!-- 3D Floating Anatomical Labels (Projected from 3D Coordinates) -->
+    <div id="labels-container" class="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+        <!-- VTA Pin -->
+        <div id="label-vta" onclick="focusCamera('vta')" class="brain-label group">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/85 border border-cyan-500/40 text-[11px] font-medium text-cyan-200 shadow-lg backdrop-blur-md">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping absolute"></span>
+                <span class="w-2 h-2 rounded-full bg-cyan-400 relative"></span>
+                <span>VTA <span class="hidden sm:inline text-slate-400 font-normal">(Mesencéfalo)</span></span>
+            </div>
+        </div>
+        <!-- Nucleus Accumbens Pin -->
+        <div id="label-nac" onclick="focusCamera('nac')" class="brain-label group">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/85 border border-pink-500/50 text-[11px] font-medium text-pink-200 shadow-lg backdrop-blur-md">
+                <span class="w-2 h-2 rounded-full bg-pink-500 animate-ping absolute"></span>
+                <span class="w-2 h-2 rounded-full bg-pink-500 relative"></span>
+                <span>Núcleo Accumbens <span class="hidden sm:inline text-slate-400 font-normal">(Recompensa)</span></span>
+            </div>
+        </div>
+        <!-- Prefrontal Cortex Pin -->
+        <div id="label-pfc" onclick="focusCamera('pfc')" class="brain-label group">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/85 border border-indigo-400/50 text-[11px] font-medium text-indigo-200 shadow-lg backdrop-blur-md">
+                <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                <span>Córtex Pré-Frontal <span class="hidden sm:inline text-slate-400 font-normal">(Controle)</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN UI OVERLAY -->
+    <div class="relative z-20 pointer-events-none flex flex-col justify-between w-full h-full p-2.5 sm:p-4 lg:p-5">
+
+        <!-- TOP BAR: Navigation Menu + Substance Selector + Camera Presets -->
+        <header class="w-full flex flex-col gap-2 pointer-events-auto">
+            <div class="flex flex-wrap items-center justify-between gap-2 hud-panel rounded-2xl px-3.5 py-2">
+                <!-- Brand & Title -->
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/20 to-fuchsia-500/20 border border-cyan-400/40 flex items-center justify-center shadow-inner shrink-0">
+                        <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xs sm:text-sm font-bold tracking-tight text-white">NEUROSIM 3D</h1>
+                            <span class="hidden xl:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono-tech uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">Via Mesocorticolímbica</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE NAVIGATION MENU (Switches between Unobstructed 3D View and Detailed Pages) -->
+                <nav class="flex items-center bg-slate-950/90 p-1 rounded-xl border border-slate-700/80 shadow-inner">
+                    <button onclick="switchAppPage('3d')" id="nav-page-3d" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm">
+                        <span>🧠 1. Cérebro 3D</span>
+                    </button>
+                    <button onclick="switchAppPage('chart')" id="nav-page-chart" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition">
+                        <span>📈 2. Gráfico & Picos</span>
+                    </button>
+                    <button onclick="switchAppPage('details')" id="nav-page-details" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition">
+                        <span>🔬 3. Detalhes & Sinapse</span>
+                    </button>
+                </nav>
+
+                <!-- Camera Focus Quick Buttons & Compare Mode Toggle -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <div id="camera-presets-bar" class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-[11px]">
+                        <span class="text-[10px] font-mono-tech uppercase text-slate-400 px-1.5 hidden 2xl:inline">Câmera:</span>
+                        <button onclick="focusCamera('overview')" id="cam-overview" class="cam-btn px-2 py-1 rounded-lg font-medium transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">Geral</button>
+                        <button onclick="focusCamera('vta')" id="cam-vta" class="cam-btn px-2 py-1 rounded-lg font-medium text-slate-300 hover:text-white transition">VTA</button>
+                        <button onclick="focusCamera('nac')" id="cam-nac" class="cam-btn px-2 py-1 rounded-lg font-medium text-slate-300 hover:text-white transition">Accumbens</button>
+                        <button onclick="focusCamera('pfc')" id="cam-pfc" class="cam-btn px-2 py-1 rounded-lg font-medium text-slate-300 hover:text-white transition">Pré-Frontal</button>
+                    </div>
+
+                    <!-- Comparative Mode Switch -->
+                    <button id="compare-toggle-btn" onclick="toggleCompareMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 hover:bg-slate-800/90 text-xs font-medium text-slate-200 transition">
+                        <span id="compare-dot" class="w-2 h-2 rounded-full bg-slate-500 transition"></span>
+                        <span>Comparar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Substance Tabs Selector Bar -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 hud-panel rounded-2xl p-1.5 sm:px-2.5">
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar" id="substance-tabs">
+                    <!-- Populated dynamically by JS -->
+                </div>
+
+                <!-- Secondary Substance Dropdown (Visible when Compare Mode is ON) -->
+                <div id="compare-selector-box" class="hidden items-center gap-2 bg-slate-900/95 px-2.5 py-1 rounded-xl border border-amber-500/40 shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <label for="compare-select" class="text-[10px] font-mono-tech uppercase text-amber-300">Comparar com:</label>
+                    <select id="compare-select" onchange="setSecondarySubstance(this.value)" class="bg-slate-950 text-xs font-semibold text-white rounded-lg px-2 py-0.5 border border-slate-700 focus:outline-none focus:border-amber-400">
+                        <option value="bets">Apostas (Bets)</option>
+                        <option value="crack">Crack</option>
+                        <option value="cocaina">Cocaína</option>
+                        <option value="alcool" selected>Álcool</option>
+                        <option value="maconha">Maconha</option>
+                        <option value="mdma">Sintéticos (MDMA)</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- =====================================================================
+             PAGE 1: UNOBSTRUCTED 3D BRAIN VIEW (With Sleek Corner Mini-HUD)
+             ===================================================================== -->
+        <div id="page-3d-view" class="flex-1 relative flex items-start justify-end my-2 pointer-events-none">
+            
+            <!-- Floating Toggle Button when Mini-HUD is collapsed -->
+            <button id="show-minihud-btn" onclick="toggleMiniHud(true)" class="hidden pointer-events-auto hud-panel px-3 py-2 rounded-xl text-xs font-semibold text-cyan-300 border border-cyan-500/40 hover:bg-slate-800/80 transition items-center gap-2 shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                <span>Mostrar Mini-Telemetria</span>
+            </button>
+
+            <!-- Compact Corner Mini-HUD (Never covers the center 3D Brain!) -->
+            <div id="mini-hud-card" class="pointer-events-auto hud-panel rounded-2xl p-3 w-64 sm:w-72 flex flex-col gap-2 transition-all duration-200">
+                <div class="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-1.5">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span id="mini-sub-dot" class="w-2.5 h-2.5 rounded-full shrink-0"></span>
+                        <span id="mini-sub-name" class="text-xs font-bold text-white truncate">Apostas (Bets)</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span id="mini-dopamine-val" class="font-mono-tech text-sm font-bold text-pink-400">100%</span>
+                        <button onclick="toggleMiniHud(false)" title="Ocultar painel para tela 100% limpa" class="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded bg-slate-900/80 border border-slate-800">ㅡ</button>
+                    </div>
+                </div>
+
+                <!-- Mini Sparkline Canvas so user sees curve without blocking the brain -->
+                <div class="relative w-full h-14 bg-slate-950/90 rounded-lg border border-slate-800/80 overflow-hidden p-0.5 cursor-pointer" onclick="switchAppPage('chart')" title="Clique para abrir a Página 2 com o gráfico completo">
+                    <canvas id="mini-dopamine-chart" class="w-full h-full block"></canvas>
+                </div>
+
+                <!-- Compact Status + Quick Jump & Page 2 CTA -->
+                <div class="flex items-center justify-between text-[10px] font-mono-tech">
+                    <span id="mini-phase-badge" class="text-slate-300 truncate">Equilíbrio Basal</span>
+                    <span id="mini-crash-pill" class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">ESTÁVEL</span>
+                </div>
+
+                <div class="flex items-center gap-1.5 pt-1 border-t border-slate-800/80">
+                    <button onclick="jumpToPeak()" class="flex-1 py-1 px-2 rounded-lg bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 text-[10px] font-semibold transition">
+                        ⚡ Pico
+                    </button>
+                    <button onclick="jumpToCrash()" class="flex-1 py-1 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-[10px] font-semibold transition">
+                        📉 Crash
+                    </button>
+                    <button onclick="switchAppPage('chart')" class="flex-[1.5] py-1 px-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/40 text-[10px] font-bold transition">
+                        📊 Abrir Gráfico →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             PAGE 2: FULL DOPAMINE CHART, PEAK INTERPRETATION & TELEMETRY DASHBOARD
+             ===================================================================== -->
+        <div id="page-chart-view" class="hidden flex-1 flex-col lg:flex-row items-stretch justify-between gap-3 my-2 overflow-y-auto pointer-events-auto pr-0.5">
+            
+            <!-- Left Column: Full Synchronized Dopamine Chart & Peak Controls -->
+            <div class="flex-1 hud-panel rounded-2xl p-4 flex flex-col justify-between gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                            <h2 class="text-sm sm:text-base font-bold text-white uppercase tracking-wider">Curva Dopaminérgica & Análise de Picos</h2>
+                        </div>
+                        <p class="text-xs text-slate-400">Gráfico expandido sincronizado em tempo real com a atividade do Núcleo Accumbens 3D</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right font-mono-tech">
+                            <span id="live-dopamine-number" class="text-xl sm:text-2xl font-bold text-white">100%</span>
+                            <span class="block text-[9px] text-slate-400 uppercase">% DO BASAL (100%)</span>
+                        </div>
+                        <button onclick="switchAppPage('3d')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-300 border border-cyan-500/30 transition">
+                            🧠 Voltar ao Cérebro 3D
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Large 2D Real-Time Canvas Graph -->
+                <div class="relative w-full h-56 sm:h-64 lg:flex-1 min-h-[210px] bg-slate-950/90 rounded-xl border border-slate-800/90 overflow-hidden p-1.5">
+                    <canvas id="dopamine-chart" class="w-full h-full block"></canvas>
+                </div>
+
+                <!-- Legend & Quick Peak Inspection Buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+                    <div class="flex items-center gap-4 text-xs text-slate-300">
+                        <span class="flex items-center gap-1.5">
+                            <span id="legend-dot-primary" class="w-3 h-3 rounded-full bg-pink-500"></span>
+                            <span id="legend-name-primary" class="font-semibold">Apostas (Bets)</span>
+                        </span>
+                        <span id="legend-secondary-wrap" class="hidden items-center gap-1.5">
+                            <span id="legend-dot-secondary" class="w-3 h-3 rounded-full bg-blue-500"></span>
+                            <span id="legend-name-secondary" class="font-semibold text-slate-300">Álcool</span>
+                        </span>
+                        <span class="flex items-center gap-1.5 text-slate-400 font-mono-tech text-[11px]">
+                            <span class="w-4 border-b border-dashed border-slate-400 inline-block"></span>
+                            <span>Equilíbrio Basal (100%)</span>
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="jumpToPeak()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 text-xs font-semibold transition">
+                            <span>⚡ Ir ao Pico</span>
+                        </button>
+                        <button onclick="jumpToCrash()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-xs font-semibold transition">
+                            <span>📉 Ir ao Crash</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CRASH / CRAVING INDICATOR -->
+                <div id="crash-alert-box" class="rounded-xl p-3 border border-slate-800 bg-slate-900/70 transition-all duration-300 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div id="crash-icon-wrap" class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-slate-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span id="crash-title" class="text-xs font-bold text-slate-300 uppercase tracking-wide">Indicador de Fissura / Crash</span>
+                                <span id="crash-badge" class="text-[10px] font-mono-tech px-2 py-0.5 rounded bg-slate-800 text-slate-400">ESTÁVEL</span>
+                            </div>
+                            <p id="crash-desc" class="text-xs text-slate-400 leading-tight mt-0.5">
+                                Níveis acima ou na linha de equilíbrio basal (100%). Sem déficit dopaminérgico agudo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Interactive Peak Ranking & Structural Bars -->
+            <div class="w-full lg:w-96 xl:w-[430px] flex flex-col gap-3">
+                <!-- Interactive Guide to All 6 Substance Peaks -->
+                <div class="hud-panel rounded-2xl p-4 flex flex-col gap-2.5">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <div>
+                            <span class="font-bold text-cyan-300 uppercase tracking-wider text-xs font-mono-tech block">Comparativo de Picos por Substância</span>
+                            <span class="text-[11px] text-slate-400">Clique em qualquer item para inspecionar seu ápice no gráfico</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 text-xs">
+                        <div onclick="inspectSubstancePeak('crack')" class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 cursor-pointer border border-slate-800/90 transition">
+                            <span class="font-bold text-pink-400">1. Crack</span>
+                            <span class="font-mono-tech text-[11px] text-slate-300">Pico: <b>~600%</b> (6.6s) • Agulha Explosiva</span>
+                        </div>
+                        <div onclick="inspectSubstancePeak('bets')" class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 cursor-pointer border border-slate-800/90 transition">
+                            <span class="font-bold text-rose-400">2. Apostas (Bets)</span>
+                            <span class="font-mono-tech text-[11px] text-slate-300">Pico: <b>~450%</b> (8.4s) + Pulso 15s</span>
+                        </div>
+                        <div onclick="inspectSubstancePeak('cocaina')" class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 cursor-pointer border border-slate-800/90 transition">
+                            <span class="font-bold text-pink-300">3. Cocaína</span>
+                            <span class="font-mono-tech text-[11px] text-slate-300">Pico: <b>~385%</b> (12.0s) • Bloqueio DAT</span>
+                        </div>
+                        <div onclick="inspectSubstancePeak('mdma')" class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 cursor-pointer border border-slate-800/90 transition">
+                            <span class="font-bold text-purple-400">4. Sintéticos (MDMA)</span>
+                            <span class="font-mono-tech text-[11px] text-slate-300">Pico: <b>~340%</b> (18.0s) • Platô Largo</span>
+                        </div>
+                        <div onclick="inspectSubstancePeak('alcool')" class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 cursor-pointer border border-slate-800/90 transition">
+                            <span class="font-bold text-blue-400">5. Álcool</span>
+                            <span class="font-mono-tech text-[11px] text-slate-300">Pico: <b>~195%</b> (13.2s) • Inibição PFC</span>
+                        </div>
+                        <div onclick="inspectSubstancePeak('maconha')" class="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 cursor-pointer border border-slate-800/90 transition">
+                            <span class="font-bold text-emerald-400">6. Maconha (THC)</span>
+                            <span class="font-mono-tech text-[11px] text-slate-300">Pico: <b>~185%</b> (21.6s) • Ondulatório</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-Time Brain Structure Telemetry Bars -->
+                <div class="hud-panel rounded-2xl p-4 flex flex-col gap-2.5">
+                    <div class="text-xs font-bold text-white uppercase tracking-wider font-mono-tech">Impacto nas Estruturas em Tempo Real</div>
+                    <div class="space-y-2.5">
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1">
+                                <span class="text-slate-300 font-medium">Núcleo Accumbens (Dopamina)</span>
+                                <span id="bar-nac-val" class="font-mono-tech text-cyan-300 font-semibold">100% Basal</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div id="bar-nac" class="h-full rounded-full transition-all duration-75" style="width: 16%; background: #FF0055;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1">
+                                <span class="text-slate-300 font-medium">Córtex Pré-Frontal (Controle Executivo)</span>
+                                <span id="bar-pfc-val" class="font-mono-tech text-indigo-300 font-semibold">100%</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div id="bar-pfc" class="h-full bg-indigo-500 rounded-full transition-all duration-75" style="width: 80%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1">
+                                <span class="text-slate-300 font-medium">Modulação Difusa (GABA / 5-HT)</span>
+                                <span id="bar-mod-val" class="font-mono-tech text-emerald-300 font-semibold">Normal</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div id="bar-mod" class="h-full bg-emerald-400 rounded-full transition-all duration-75" style="width: 25%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             PAGE 3: NEUROBIOLOGICAL DETAILS & SYNAPTIC MECHANISMS PAGE
+             ===================================================================== -->
+        <div id="page-details-view" class="hidden flex-1 flex-col lg:flex-row items-stretch justify-between gap-3 my-2 overflow-y-auto pointer-events-auto pr-0.5">
+            
+            <!-- Active Substance Complete Dossier -->
+            <div class="flex-1 hud-panel rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-4">
+                <div class="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="sub-color-dot" class="w-3.5 h-3.5 rounded-full shadow-sm"></span>
+                            <span id="sub-category-badge" class="text-[11px] font-mono-tech uppercase tracking-wider px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">Hiperativação</span>
+                        </div>
+                        <h2 id="sub-title" class="text-lg sm:text-xl font-bold text-white mt-1.5">Apostas Eletrônicas (Bets)</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right font-mono-tech">
+                            <span class="text-[10px] text-slate-400 block">PICO MÁXIMO</span>
+                            <span id="sub-peak-stat" class="text-lg font-bold text-pink-400">~450%</span>
+                        </div>
+                        <button onclick="switchAppPage('3d')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-300 border border-cyan-500/30 transition">
+                            🧠 Ver no Cérebro 3D
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detailed Explanation -->
+                <div class="bg-slate-950/75 rounded-xl p-3.5 border border-slate-800/90">
+                    <div class="text-[11px] font-mono-tech uppercase text-cyan-400 mb-1">Mecanismo de Ação Sináptica</div>
+                    <p id="sub-description" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                        Recompensa variável intermitente (quase-acerto) dispara rajadas abruptas de dopamina do VTA ao Núcleo Accumbens, seguidas de queda rápida abaixo do nível basal que gera urgência compulsiva.
+                    </p>
+                </div>
+
+                <!-- 3-Column Breakdown of How to Read the Graph & Brain Regions -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="bg-slate-900/75 rounded-xl p-3 border border-cyan-500/30">
+                        <div class="text-xs font-bold text-cyan-300 mb-1">1. Área Tegmentar Ventral (VTA)</div>
+                        <p class="text-[11px] text-slate-300 leading-relaxed">
+                            Localizada no mesencéfalo, é a "usina" de neurônios dopaminérgicos. Quando ativada pela substância ou aposta, dispara potenciais de ação pelo feixe medial até o estriado ventral.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900/75 rounded-xl p-3 border border-pink-500/30">
+                        <div class="text-xs font-bold text-pink-300 mb-1">2. Núcleo Accumbens (NAc)</div>
+                        <p class="text-[11px] text-slate-300 leading-relaxed">
+                            Centro da saliência motivacional e recompensa. O acúmulo de dopamina aqui gera o pico do gráfico. Na queda pós-pico (abaixo de 100%), a redução de receptores D2 dispara a **fissura (craving)**.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900/75 rounded-xl p-3 border border-indigo-500/30">
+                        <div class="text-xs font-bold text-indigo-300 mb-1">3. Córtex Pré-Frontal (PFC)</div>
+                        <p class="text-[11px] text-slate-300 leading-relaxed">
+                            Responsável pelo freio inibitório, julgamento e tomada de decisão. Substâncias como o **Álcool** apagam sua atividade rapidamente, enquanto picos extremos (Crack/Bets) sequestram seu controle.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Dynamic Neurochemical Phase Status Box -->
+                <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800/90 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div id="phase-indicator-dot" class="w-3 h-3 rounded-full bg-cyan-400"></div>
+                        <div>
+                            <div class="text-[10px] font-mono-tech uppercase text-slate-400">Fase Atual na Linha do Tempo</div>
+                            <div id="phase-name" class="text-xs sm:text-sm font-semibold text-white">Equilíbrio Basal</div>
+                        </div>
+                    </div>
+                    <div class="text-right font-mono-tech">
+                        <div class="text-[10px] text-slate-400">VELOCIDADE DAS PARTÍCULAS 3D</div>
+                        <div id="particle-speed-readout" class="text-sm font-bold text-cyan-300">1.0x</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM BAR: Event Trigger ("Simular Evento") & Timeline Scrubber -->
+        <footer class="w-full pointer-events-auto">
+            <div class="hud-panel rounded-2xl p-3 sm:px-5 sm:py-3.5 flex flex-col md:flex-row items-stretch md:items-center gap-3 sm:gap-5">
+                
+                <!-- Trigger Button ("Simular Evento") & Play/Pause -->
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <button id="simulate-btn" onclick="triggerSimulationEvent()" class="flex-1 md:flex-initial flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white shadow-lg transition-all duration-200 transform active:scale-95 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:brightness-110 border border-pink-400/50 shadow-pink-600/30">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>SIMULAR EVENTO (DISPARO)</span>
+                    </button>
+
+                    <button id="play-pause-btn" onclick="togglePlayPause()" title="Pausar / Continuar Linha do Tempo" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition">
+                        <svg id="icon-pause" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6" />
+                        </svg>
+                        <svg id="icon-play" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Timeline Slider & Phase Markers -->
+                <div class="flex-1 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-[11px] font-mono-tech">
+                        <div class="flex items-center gap-3 text-slate-400">
+                            <span class="text-cyan-300 font-semibold">LINHA DO TEMPO NEUROQUÍMICA</span>
+                            <span class="hidden sm:inline text-slate-500">|</span>
+                            <span class="hidden sm:inline">Arraste para inspecionar Absorção, Pico e Crash</span>
+                        </div>
+                        <div class="text-white font-bold">
+                            <span id="timeline-time-label">t = 0.0s</span>
+                            <span class="text-slate-500"> / 60.0s</span>
+                        </div>
+                    </div>
+
+                    <div class="relative flex items-center">
+                        <input
+                            id="timeline-slider"
+                            type="range"
+                            min="0"
+                            max="1000"
+                            value="0"
+                            class="neuro-slider"
+                            oninput="onTimelineScrub(this.value)"
+                        />
+                    </div>
+
+                    <div class="flex justify-between text-[10px] font-mono-tech text-slate-400 px-0.5">
+                        <span>0s • Basal / Gatilho</span>
+                        <span>12s • Absorção & Pico Sináptico</span>
+                        <span>30s • Depleção / Queda</span>
+                        <span>45s • Crash / Fissura (&lt;Basal)</span>
+                        <span>60s • Recuperação</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- APPLICATION LOGIC & PROCEDURAL 3D ENGINE -->
+    <script>
+        /***********************************************************************
+         * 1. NEUROBIOLOGICAL SUBSTANCE DATABASE & DYNAMIC PROFILES
+         ***********************************************************************/
+        const SUBSTANCES = {
+            bets: {
+                id: 'bets',
+                name: 'Apostas Eletrônicas (Bets)',
+                shortName: 'Apostas (Bets)',
+                category: 'Hiperativação / Pico Rápido',
+                colorHex: '#FF0055',
+                secondaryGlowHex: '#FF5599',
+                peakText: '~450%',
+                description: 'A incerteza da recompensa intermitente e o efeito de "quase-ganho" disparam pulsos agudos de dopamina do VTA ao Núcleo Accumbens. A queda abrupta abaixo do nível basal gera fissura imediata para continuar apostando.',
+                pulseFreq: 11.0,
+                pfcBaseImpact: -0.35, // Reduces executive impulse control during peak/craving
+                modulatorLevel: 0.20, // Low GABA/Serotonin calm modulation
+                particleFastBoost: 4.4,
+                particleSlowBoost: 0.8,
+                // Mathematical curve function returning Dopamine % (100 = baseline) for normalized time t in [0, 1]
+                curveFn: (t) => {
+                    if (t < 0.03) return 100;
+                    // Instant spike around t = 0.14, secondary near-miss micro-spike at t = 0.25, then deep crash
+                    const spike1 = 350 * Math.exp(-Math.pow((t - 0.14) / 0.055, 2));
+                    const spike2 = 160 * Math.exp(-Math.pow((t - 0.25) / 0.045, 2));
+                    const crash = -48 * Math.exp(-Math.pow((t - 0.56) / 0.22, 2));
+                    return Math.max(42, 100 + spike1 + spike2 + crash);
+                },
+                pfcCurveFn: (t) => {
+                    // Prefrontal cortex control drops during the spike and crash craving
+                    const drop = 0.42 * Math.exp(-Math.pow((t - 0.32) / 0.28, 2));
+                    return Math.max(0.25, 0.85 - drop);
+                }
+            },
+            crack: {
+                id: 'crack',
+                name: 'Crack',
+                shortName: 'Crack',
+                category: 'Hiperativação Extrema',
+                colorHex: '#FF0055',
+                secondaryGlowHex: '#FF1E56',
+                peakText: '~600%',
+                description: 'Absorção pulmonar ultrarrápida bloqueia massivamente a recaptação de dopamina no Núcleo Accumbens em segundos. O pico explosivo é seguido por uma depleção severa (Crash profundo), desligando o controle pré-frontal.',
+                pulseFreq: 14.0,
+                pfcBaseImpact: -0.55,
+                modulatorLevel: 0.12,
+                particleFastBoost: 5.5,
+                particleSlowBoost: 0.6,
+                curveFn: (t) => {
+                    if (t < 0.02) return 100;
+                    // Ultra-fast intense spike at t=0.11, rapid drop into severe crash (down to 38% basal)
+                    const spike = 500 * Math.exp(-Math.pow((t - 0.11) / 0.05, 2));
+                    const crash = -62 * Math.exp(-Math.pow((t - 0.52) / 0.26, 2));
+                    return Math.max(35, 100 + spike + crash);
+                },
+                pfcCurveFn: (t) => {
+                    const drop = 0.60 * Math.exp(-Math.pow((t - 0.35) / 0.30, 2));
+                    return Math.max(0.18, 0.85 - drop);
+                }
+            },
+            cocaina: {
+                id: 'cocaina',
+                name: 'Cocaína',
+                shortName: 'Cocaína',
+                category: 'Estimulante Dopaminérgico',
+                colorHex: '#FF2A85',
+                secondaryGlowHex: '#FF758F',
+                peakText: '~380%',
+                description: 'Bloqueia os transportadores de dopamina (DAT), mantendo o neurotransmissor acumulado na fenda sináptica do Núcleo Accumbens. Provoca euforia intensa seguida de queda abaixo da linha basal e forte fissura.',
+                pulseFreq: 8.5,
+                pfcBaseImpact: -0.40,
+                modulatorLevel: 0.25,
+                particleFastBoost: 3.8,
+                particleSlowBoost: 0.9,
+                curveFn: (t) => {
+                    if (t < 0.03) return 100;
+                    const spike = 285 * Math.exp(-Math.pow((t - 0.20) / 0.095, 2));
+                    const crash = -45 * Math.exp(-Math.pow((t - 0.64) / 0.22, 2));
+                    return Math.max(45, 100 + spike + crash);
+                },
+                pfcCurveFn: (t) => {
+                    const drop = 0.45 * Math.exp(-Math.pow((t - 0.38) / 0.28, 2));
+                    return Math.max(0.25, 0.85 - drop);
+                }
+            },
+            alcool: {
+                id: 'alcool',
+                name: 'Álcool',
+                shortName: 'Álcool',
+                category: 'Depressão / Inibição (GABA)',
+                colorHex: '#1D3557',
+                chartColorHex: '#3B82F6', // Brighter blue on dark chart while keeping #1D3557 deep indigo core
+                secondaryGlowHex: '#3B82F6',
+                peakText: '~195%',
+                description: 'Potencializa a inibição por GABA e reduz o glutamato. Após uma elevação dopaminérgica moderada inicial, desacelera a transmissão neural e apaga progressivamente a luminosidade do Córtex Pré-Frontal (perda do freio inibitório).',
+                pulseFreq: 2.2,
+                pfcBaseImpact: -0.75,
+                modulatorLevel: 0.90, // Strong GABAergic slow dispersed particles
+                particleFastBoost: 0.55,
+                particleSlowBoost: 2.4,
+                curveFn: (t) => {
+                    if (t < 0.03) return 100;
+                    // Moderate initial disinhibition bump, followed by sluggish depression below baseline
+                    const rise = 95 * Math.exp(-Math.pow((t - 0.22) / 0.14, 2));
+                    const depression = -32 * Math.exp(-Math.pow((t - 0.68) / 0.25, 2));
+                    return Math.max(58, 100 + rise + depression);
+                },
+                pfcCurveFn: (t) => {
+                    // Noticeable progressive weakening of Prefrontal Cortex luminosity
+                    if (t < 0.04) return 0.85;
+                    const inhibition = 0.72 * (1 - Math.exp(-t * 5.5)) * Math.exp(-Math.pow(Math.max(0, t - 0.55), 2) * 2.5);
+                    return Math.max(0.10, 0.85 - inhibition);
+                }
+            },
+            maconha: {
+                id: 'maconha',
+                name: 'Maconha (THC)',
+                shortName: 'Maconha',
+                category: 'Modulação Canabinoide',
+                colorHex: '#00F5D4',
+                secondaryGlowHex: '#10B981',
+                peakText: '~175%',
+                description: 'O THC atua nos receptores CB1 pré-sinápticos, reduzindo a inibição de neurônios dopaminérgicos no VTA. Produz um brilho esmeralda ondulatório e contínuo, sem picos explosivos ou crash abrupto severo.',
+                pulseFreq: 3.4,
+                pfcBaseImpact: -0.25,
+                modulatorLevel: 0.78,
+                particleFastBoost: 1.45,
+                particleSlowBoost: 1.85,
+                curveFn: (t) => {
+                    if (t < 0.03) return 100;
+                    const envelope = Math.exp(-Math.pow((t - 0.36) / 0.26, 2));
+                    const wave = 12 * Math.sin(t * 28) * envelope;
+                    const gentleDip = -10 * Math.exp(-Math.pow((t - 0.82) / 0.12, 2));
+                    return 100 + 75 * envelope + wave + gentleDip;
+                },
+                pfcCurveFn: (t) => {
+                    const mod = 0.28 * Math.exp(-Math.pow((t - 0.36) / 0.26, 2));
+                    return 0.85 - mod;
+                }
+            },
+            mdma: {
+                id: 'mdma',
+                name: 'Drogas Sintéticas (MDMA)',
+                shortName: 'Sintéticos (MDMA)',
+                category: 'Sobrecarga Serotoninérgica',
+                colorHex: '#7209B7',
+                chartColorHex: '#A855F7',
+                secondaryGlowHex: '#F59E0B', // Neon purple + gold diffuse cortical pulse
+                peakText: '~340%',
+                description: 'Inverte os transportadores de serotonina (SERT) e dopamina, inundando difusamente todo o córtex cerebral com pulsos roxo-neon e dourados. Após a sobrecarga sináptica, ocorre depleção de serotonina e dopamina.',
+                pulseFreq: 6.8,
+                pfcBaseImpact: -0.30,
+                modulatorLevel: 1.0, // Maximum diffuse serotonin particle cloud
+                particleFastBoost: 3.1,
+                particleSlowBoost: 3.5,
+                curveFn: (t) => {
+                    if (t < 0.03) return 100;
+                    const plateau = 240 * Math.exp(-Math.pow((t - 0.30) / 0.16, 2));
+                    const crash = -38 * Math.exp(-Math.pow((t - 0.76) / 0.18, 2));
+                    return Math.max(52, 100 + plateau + crash);
+                },
+                pfcCurveFn: (t) => {
+                    const wave = 0.25 * Math.sin(t * 18) * Math.exp(-Math.pow((t - 0.30) / 0.20, 2));
+                    return Math.min(1.0, Math.max(0.30, 0.75 + wave));
+                }
+            }
+        };
+
+        /***********************************************************************
+         * 2. APPLICATION STATE
+         ***********************************************************************/
+        const state = {
+            primaryId: 'bets',
+            secondaryId: 'alcool',
+            compareMode: false,
+            activePage: '3d',   // '3d' | 'chart' | 'details'
+            miniHudVisible: true,
+            isPlaying: true,
+            simTime: 0.0,       // 0 to 60 seconds cycle
+            simDuration: 60.0,  // 60 seconds total cycle
+            clockDelta: 0,
+            elapsedTime: 0,
+            cameraTargetPos: new THREE.Vector3(0, 0.5, 0),
+            cameraDesiredEye: new THREE.Vector3(0, 2.2, 12.5),
+            isTransitioningCamera: false
+        };
+
+        /***********************************************************************
+         * 3. THREE.JS SCENE, CAMERA, RENDERER & POST-PROCESSING
+         ***********************************************************************/
+        let scene, camera, renderer, controls, composer, bloomPass;
+        let brainGroup;
+        let leftHemisphereMesh, rightHemisphereMesh;
+        let pfcHighlightMesh, pfcPointLight;
+        let vtaMesh, vtaHaloMesh, nacLeftMesh, nacRightMesh, nacHaloLeft, nacHaloRight;
+        let centralGlowLight, nacLight;
+        let tractMeshesPrimary = [], tractMeshesSecondary = [];
+        let bezierCurvesPrimary = [], bezierCurvesSecondary = [];
+        let fastParticleSystem, slowParticleSystem, compareParticleSystem;
+        let corticalSerotoninSystem;
+
+        // 3D Reference Coordinates for Anatomical Structures
+        const ANATOMY_POS = {
+            vta: new THREE.Vector3(0, -1.35, -0.35),
+            nacLeft: new THREE.Vector3(-0.78, -0.15, 1.85),
+            nacRight: new THREE.Vector3(0.78, -0.15, 1.85),
+            nacCenter: new THREE.Vector3(0, -0.15, 1.85),
+            pfcLeft: new THREE.Vector3(-1.15, 1.15, 3.35),
+            pfcRight: new THREE.Vector3(1.15, 1.15, 3.35),
+            pfcCenter: new THREE.Vector3(0, 1.25, 3.55)
+        };
+
+        // Procedural 3D Gyri/Sulci Noise Function (Multi-octave trigonometric Perlin approximation)
+        function gyriNoise3D(x, y, z) {
+            const n1 = Math.sin(x * 3.7 + Math.cos(y * 3.2)) * Math.cos(z * 3.5 + Math.sin(x * 2.8));
+            const n2 = 0.5 * Math.sin(x * 7.4 - z * 6.8 + Math.sin(y * 6.1)) * Math.cos(y * 7.2 + x * 5.4);
+            const n3 = 0.25 * Math.cos(x * 13.5 + y * 12.0 - z * 11.2);
+            // Ridged gyri folds
+            const folds = 1.0 - Math.abs(n1 + n2 * 0.7);
+            return (folds * 0.16) + (n3 * 0.04);
+        }
+
+        // Generate a procedural radial glow texture via HTML5 Canvas (Zero external assets)
+        function createProceduralParticleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.85)');
+            grad.addColorStop(0.65, 'rgba(255, 255, 255, 0.22)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        function initThreeScene() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0A0E17, 0.028);
+
+            camera = new THREE.PerspectiveCamera(42, width / height, 0.5, 80);
+            camera.position.set(6.8, 3.2, 10.5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.15;
+            container.appendChild(renderer.domElement);
+
+            // Post-processing UnrealBloomPass for incandescent internal structures
+            try {
+                const renderScene = new THREE.RenderPass(scene, camera);
+                bloomPass = new THREE.UnrealBloomPass(
+                    new THREE.Vector2(width, height),
+                    1.15, // strength
+                    0.55, // radius
+                    0.22  // threshold
+                );
+                composer = new THREE.EffectComposer(renderer);
+                composer.addPass(renderScene);
+                composer.addPass(bloomPass);
+            } catch (e) {
+                composer = null;
+            }
+
+            // OrbitControls with bounded zoom & smooth damping
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.06;
+            controls.rotateSpeed = 0.75;
+            controls.minDistance = 4.2;
+            controls.maxDistance = 22.0;
+            controls.target.set(0, 0.3, 0.4);
+
+            // Stop automatic camera transition if user manually grabs the canvas
+            renderer.domElement.addEventListener('pointerdown', () => {
+                state.isTransitioningCamera = false;
+            });
+
+            // Ambient & Rim Lighting for Medical Hologram Aesthetic
+            const ambientLight = new THREE.AmbientLight(0x1e293b, 1.3);
+            scene.add(ambientLight);
+
+            const topRimLight = new THREE.DirectionalLight(0x38bdf8, 0.9);
+            topRimLight.position.set(0, 12, -6);
+            scene.add(topRimLight);
+
+            const sideLight = new THREE.DirectionalLight(0x6366f1, 0.5);
+            sideLight.position.set(-10, -4, 8);
+            scene.add(sideLight);
+
+            // Central Internal Point Light (glowing through translucent cortex)
+            centralGlowLight = new THREE.PointLight(0xff0055, 2.8, 12);
+            centralGlowLight.position.copy(ANATOMY_POS.vta);
+            scene.add(centralGlowLight);
+
+            nacLight = new THREE.PointLight(0xff0055, 3.2, 10);
+            nacLight.position.copy(ANATOMY_POS.nacCenter);
+            scene.add(nacLight);
+
+            pfcPointLight = new THREE.PointLight(0x4f46e5, 2.5, 9);
+            pfcPointLight.position.copy(ANATOMY_POS.pfcCenter);
+            scene.add(pfcPointLight);
+
+            // Main Brain Group
+            brainGroup = new THREE.Group();
+            scene.add(brainGroup);
+
+            // Build all procedural components
+            buildProceduralCortex();
+            buildPrefrontalCortexRegion();
+            buildRewardCircuitStructures();
+            buildDopaminergicBezierTracts();
+            buildNeurotransmitterParticles();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        /***********************************************************************
+         * 4. PROCEDURAL BRAIN GEOMETRY (CORTEX, PFC, VTA, ACCUMBENS, TRACTS)
+         ***********************************************************************/
+        function createDeformedHemisphereGeometry(isRight) {
+            const sign = isRight ? 1 : -1;
+            const geo = new THREE.SphereGeometry(3.2, 56, 44);
+            const pos = geo.attributes.position;
+            const colors = new Float32Array(pos.count * 3);
+            const v = new THREE.Vector3();
+
+            for (let i = 0; i < pos.count; i++) {
+                v.fromBufferAttribute(pos, i);
+
+                // Normalize direction
+                const nx = v.x / 3.2;
+                const ny = v.y / 3.2;
+                const nz = v.z / 3.2;
+
+                // Flatten medial interhemispheric fissure (inner face near x=0)
+                if (nx * sign < 0) {
+                    v.x *= 0.18;
+                } else {
+                    v.x *= 0.86;
+                }
+
+                // Elongate anterior-posterior (z-axis)
+                v.z *= 1.32;
+                // Slightly flatten inferior base
+                if (v.y < 0) {
+                    v.y *= 0.72;
+                    // Temporal lobe bulge on sides
+                    if (Math.abs(nx) > 0.35 && nz > -0.2 && nz < 0.55) {
+                        v.y -= 0.42 * Math.sin((nz + 0.2) * Math.PI);
+                        v.x += sign * 0.28;
+                    }
+                } else {
+                    v.y *= 0.96;
+                }
+
+                // Slight frontal tapering
+                if (nz > 0.3) {
+                    v.x *= (1.0 - (nz - 0.3) * 0.18);
+                }
+
+                // Apply procedural Gyri and Sulci vertex displacement
+                const noiseVal = gyriNoise3D(v.x * 0.85, v.y * 0.85, v.z * 0.85);
+                const normalDir = v.clone().normalize();
+                v.addScaledVector(normalDir, noiseVal);
+
+                // Offset hemisphere slightly from midline fissure
+                v.x += sign * 0.14;
+
+                pos.setXYZ(i, v.x, v.y, v.z);
+
+                // Vertex color tinting: highlight frontal lobe vertices vs rest of cortex
+                const isFrontal = v.z > 1.85 && v.y > -0.6;
+                if (isFrontal) {
+                    colors[i * 3] = 0.38;
+                    colors[i * 3 + 1] = 0.58;
+                    colors[i * 3 + 2] = 0.98;
+                } else {
+                    colors[i * 3] = 0.16;
+                    colors[i * 3 + 1] = 0.26;
+                    colors[i * 3 + 2] = 0.42;
+                }
+            }
+
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            return geo;
+        }
+
+        function buildProceduralCortex() {
+            // MeshPhysicalMaterial as specified: roughness: 0.3, transmission: 0.7, opacity: 0.6
+            const cortexMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0x3b5278,
+                vertexColors: true,
+                roughness: 0.3,
+                metalness: 0.08,
+                transmission: 0.7,
+                transparent: true,
+                opacity: 0.6,
+                ior: 1.38,
+                reflectivity: 0.5,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+
+            const leftGeo = createDeformedHemisphereGeometry(false);
+            const rightGeo = createDeformedHemisphereGeometry(true);
+
+            leftHemisphereMesh = new THREE.Mesh(leftGeo, cortexMaterial);
+            rightHemisphereMesh = new THREE.Mesh(rightGeo, cortexMaterial);
+
+            // Subtle holographic wireframe overlay to accentuate gyri/sulci contours
+            const wireMat = new THREE.MeshBasicMaterial({
+                color: 0x38bdf8,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.035,
+                depthWrite: false
+            });
+            leftHemisphereMesh.add(new THREE.Mesh(leftGeo, wireMat));
+            rightHemisphereMesh.add(new THREE.Mesh(rightGeo, wireMat));
+
+            brainGroup.add(leftHemisphereMesh);
+            brainGroup.add(rightHemisphereMesh);
+
+            // Subtle Brainstem / Midbrain translucent column at bottom
+            const stemGeo = new THREE.CylinderGeometry(0.65, 0.45, 2.4, 20, 12);
+            const stemPos = stemGeo.attributes.position;
+            for (let i = 0; i < stemPos.count; i++) {
+                const y = stemPos.getY(i);
+                stemPos.setZ(i, stemPos.getZ(i) - y * 0.25);
+            }
+            stemGeo.computeVertexNormals();
+            const stemMat = new THREE.MeshPhysicalMaterial({
+                color: 0x1e293b,
+                roughness: 0.4,
+                transmission: 0.6,
+                transparent: true,
+                opacity: 0.35,
+                depthWrite: false
+            });
+            const stemMesh = new THREE.Mesh(stemGeo, stemMat);
+            stemMesh.position.set(0, -2.35, -0.75);
+            brainGroup.add(stemMesh);
+        }
+
+        // Prefrontal Cortex (PFC) Independent Vertex Cluster / Lobe Highlight
+        function buildPrefrontalCortexRegion() {
+            const pfcGroup = new THREE.Group();
+
+            // Create frontal cortical vertex shell + synaptic node cloud in the anterior frontal region
+            const pfcGeo = new THREE.SphereGeometry(1.75, 32, 24);
+            const pos = pfcGeo.attributes.position;
+            const v = new THREE.Vector3();
+            for (let i = 0; i < pos.count; i++) {
+                v.fromBufferAttribute(pos, i);
+                v.x *= 1.25;
+                v.y *= 0.85;
+                v.z *= 0.92;
+                const n = gyriNoise3D(v.x * 1.4, v.y * 1.4, v.z * 1.4);
+                v.addScaledVector(v.clone().normalize(), n * 0.85);
+                pos.setXYZ(i, v.x, v.y, v.z);
+            }
+            pfcGeo.computeVertexNormals();
+
+            const pfcMat = new THREE.MeshBasicMaterial({
+                color: 0x4f46e5,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.32,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            pfcHighlightMesh = new THREE.Mesh(pfcGeo, pfcMat);
+            pfcHighlightMesh.position.copy(ANATOMY_POS.pfcCenter).add(new THREE.Vector3(0, -0.1, -0.45));
+
+            // Add glowing vertex points on the PFC to clearly display inhibitory/executive activity
+            const pfcPointsMat = new THREE.PointsMaterial({
+                color: 0x818cf8,
+                size: 0.14,
+                map: createProceduralParticleTexture(),
+                transparent: true,
+                opacity: 0.75,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const pfcPoints = new THREE.Points(pfcGeo, pfcPointsMat);
+            pfcHighlightMesh.add(pfcPoints);
+            pfcHighlightMesh.userData.pointsMat = pfcPointsMat;
+
+            brainGroup.add(pfcHighlightMesh);
+        }
+
+        // VTA & Nucleus Accumbens Incandescent Structures
+        function buildRewardCircuitStructures() {
+            const glowTex = createProceduralParticleTexture();
+
+            // 1. VTA (Ventral Tegmental Area - Midbrain Base)
+            const vtaGeo = new THREE.IcosahedronGeometry(0.42, 3);
+            const vtaMat = new THREE.MeshBasicMaterial({
+                color: 0x00f5d4,
+                wireframe: false
+            });
+            vtaMesh = new THREE.Mesh(vtaGeo, vtaMat);
+            vtaMesh.position.copy(ANATOMY_POS.vta);
+
+            // Incandescent wireframe shell around VTA
+            const vtaWire = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(0.52, 2),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.5,
+                    blending: THREE.AdditiveBlending
+                })
+            );
+            vtaMesh.add(vtaWire);
+
+            // VTA Halo Sprite
+            const vtaSpriteMat = new THREE.SpriteMaterial({
+                map: glowTex,
+                color: 0x00f5d4,
+                transparent: true,
+                opacity: 0.75,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            vtaHaloMesh = new THREE.Sprite(vtaSpriteMat);
+            vtaHaloMesh.scale.set(2.4, 2.4, 1);
+            vtaMesh.add(vtaHaloMesh);
+            brainGroup.add(vtaMesh);
+
+            // 2. Nucleus Accumbens (Bilateral Ventral Striatum Nodes)
+            const nacGeo = new THREE.IcosahedronGeometry(0.46, 3);
+            const nacMat = new THREE.MeshBasicMaterial({
+                color: 0xff0055
+            });
+
+            nacLeftMesh = new THREE.Mesh(nacGeo, nacMat);
+            nacLeftMesh.position.copy(ANATOMY_POS.nacLeft);
+
+            nacRightMesh = new THREE.Mesh(nacGeo, nacMat.clone());
+            nacRightMesh.position.copy(ANATOMY_POS.nacRight);
+
+            // Wireframe incandescent cages
+            const nacCageGeo = new THREE.IcosahedronGeometry(0.58, 2);
+            const nacCageMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.65,
+                blending: THREE.AdditiveBlending
+            });
+            nacLeftMesh.add(new THREE.Mesh(nacCageGeo, nacCageMat));
+            nacRightMesh.add(new THREE.Mesh(nacCageGeo, nacCageMat));
+
+            // Glow Halos for Nucleus Accumbens
+            const nacHaloMatL = new THREE.SpriteMaterial({
+                map: glowTex,
+                color: 0xff0055,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            nacHaloLeft = new THREE.Sprite(nacHaloMatL);
+            nacHaloLeft.scale.set(2.8, 2.8, 1);
+            nacLeftMesh.add(nacHaloLeft);
+
+            nacHaloRight = new THREE.Sprite(nacHaloMatL.clone());
+            nacHaloRight.scale.set(2.8, 2.8, 1);
+            nacRightMesh.add(nacHaloRight);
+
+            brainGroup.add(nacLeftMesh);
+            brainGroup.add(nacRightMesh);
+        }
+
+        // 3D Bézier Tracts connecting VTA -> Nucleus Accumbens -> Prefrontal Cortex
+        function buildDopaminergicBezierTracts() {
+            // Left & Right Mesocorticolimbic Pathways (Primary)
+            const leftCurve1 = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.vta.clone(),
+                new THREE.Vector3(-0.45, -0.95, 0.55),
+                new THREE.Vector3(-0.85, -0.55, 1.25),
+                ANATOMY_POS.nacLeft.clone()
+            );
+            const leftCurve2 = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.nacLeft.clone(),
+                new THREE.Vector3(-0.95, 0.35, 2.35),
+                new THREE.Vector3(-1.15, 0.85, 2.85),
+                ANATOMY_POS.pfcLeft.clone()
+            );
+
+            const rightCurve1 = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.vta.clone(),
+                new THREE.Vector3(0.45, -0.95, 0.55),
+                new THREE.Vector3(0.85, -0.55, 1.25),
+                ANATOMY_POS.nacRight.clone()
+            );
+            const rightCurve2 = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.nacRight.clone(),
+                new THREE.Vector3(0.95, 0.35, 2.35),
+                new THREE.Vector3(1.15, 0.85, 2.85),
+                ANATOMY_POS.pfcRight.clone()
+            );
+
+            // Central Medial Forebrain Bundle Branch
+            const centerPFCBranch = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.vta.clone(),
+                new THREE.Vector3(0, -0.45, 1.1),
+                new THREE.Vector3(0, 0.45, 2.4),
+                ANATOMY_POS.pfcCenter.clone()
+            );
+
+            bezierCurvesPrimary = [leftCurve1, leftCurve2, rightCurve1, rightCurve2, centerPFCBranch];
+
+            const primaryTubeMat = new THREE.MeshBasicMaterial({
+                color: 0xff0055,
+                transparent: true,
+                opacity: 0.48,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            bezierCurvesPrimary.forEach((curve) => {
+                const tubeGeo = new THREE.TubeGeometry(curve, 44, 0.055, 8, false);
+                const mesh = new THREE.Mesh(tubeGeo, primaryTubeMat);
+                brainGroup.add(mesh);
+                tractMeshesPrimary.push(mesh);
+            });
+
+            // Secondary Parallel Tracts for Comparative Mode
+            const secLeft = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.vta.clone().add(new THREE.Vector3(0, -0.1, 0)),
+                new THREE.Vector3(-0.65, -0.75, 0.65),
+                new THREE.Vector3(-0.95, 0.15, 1.95),
+                ANATOMY_POS.pfcLeft.clone().add(new THREE.Vector3(0.25, -0.15, 0))
+            );
+            const secRight = new THREE.CubicBezierCurve3(
+                ANATOMY_POS.vta.clone().add(new THREE.Vector3(0, -0.1, 0)),
+                new THREE.Vector3(0.65, -0.75, 0.65),
+                new THREE.Vector3(0.95, 0.15, 1.95),
+                ANATOMY_POS.pfcRight.clone().add(new THREE.Vector3(-0.25, -0.15, 0))
+            );
+
+            bezierCurvesSecondary = [secLeft, secRight];
+            const secTubeMat = new THREE.MeshBasicMaterial({
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.0, // Hidden until Compare Mode is enabled
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            bezierCurvesSecondary.forEach((curve) => {
+                const tubeGeo = new THREE.TubeGeometry(curve, 40, 0.045, 8, false);
+                const mesh = new THREE.Mesh(tubeGeo, secTubeMat);
+                brainGroup.add(mesh);
+                tractMeshesSecondary.push(mesh);
+            });
+        }
+
+        /***********************************************************************
+         * 5. PROCEDURAL PARTICLE SYSTEMS (DOPAMINE FAST vs GABA/5-HT SLOW)
+         ***********************************************************************/
+        function buildNeurotransmitterParticles() {
+            const particleTex = createProceduralParticleTexture();
+
+            // A. Fast Concentrated Dopamine Particles along the Bézier Pathways (650 particles)
+            const fastCount = 650;
+            const fastPositions = new Float32Array(fastCount * 3);
+            const fastMeta = [];
+
+            for (let i = 0; i < fastCount; i++) {
+                // Full path index: 0 = Left (VTA->NAc->PFC), 1 = Right (VTA->NAc->PFC), 2 = Center (VTA->PFC)
+                const pathType = i % 3;
+                const t = Math.random();
+                const jitter = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.16,
+                    (Math.random() - 0.5) * 0.16,
+                    (Math.random() - 0.5) * 0.16
+                );
+                fastMeta.push({
+                    pathType,
+                    t,
+                    speedOffset: 0.75 + Math.random() * 0.5,
+                    jitter
+                });
+            }
+
+            const fastGeo = new THREE.BufferGeometry();
+            fastGeo.setAttribute('position', new THREE.BufferAttribute(fastPositions, 3));
+            const fastMat = new THREE.PointsMaterial({
+                color: 0xff0055,
+                size: 0.24,
+                map: particleTex,
+                transparent: true,
+                opacity: 0.92,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            fastParticleSystem = new THREE.Points(fastGeo, fastMat);
+            fastParticleSystem.userData.meta = fastMeta;
+            brainGroup.add(fastParticleSystem);
+
+            // B. Slow, Dispersed, Voluminous Particles (GABA / Serotonin Modulation - 420 particles)
+            const slowCount = 420;
+            const slowPositions = new Float32Array(slowCount * 3);
+            const slowMeta = [];
+
+            for (let i = 0; i < slowCount; i++) {
+                // Distributed around the tracts and diffuse cortical volume
+                const pathType = i % 3;
+                const t = Math.random();
+                const spreadRadius = 0.35 + Math.random() * 1.45;
+                const angle1 = Math.random() * Math.PI * 2;
+                const angle2 = Math.random() * Math.PI * 2;
+                slowMeta.push({
+                    pathType,
+                    t,
+                    speedOffset: 0.3 + Math.random() * 0.4,
+                    spreadRadius,
+                    angle1,
+                    angle2,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            const slowGeo = new THREE.BufferGeometry();
+            slowGeo.setAttribute('position', new THREE.BufferAttribute(slowPositions, 3));
+            const slowMat = new THREE.PointsMaterial({
+                color: 0x00f5d4,
+                size: 0.42,
+                map: particleTex,
+                transparent: true,
+                opacity: 0.45,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            slowParticleSystem = new THREE.Points(slowGeo, slowMat);
+            slowParticleSystem.userData.meta = slowMeta;
+            brainGroup.add(slowParticleSystem);
+
+            // C. Secondary Substance Particle System for Comparative Mode (300 particles)
+            const compCount = 300;
+            const compPositions = new Float32Array(compCount * 3);
+            const compMeta = [];
+            for (let i = 0; i < compCount; i++) {
+                compMeta.push({
+                    curveIdx: i % 2,
+                    t: Math.random(),
+                    speedOffset: 0.8 + Math.random() * 0.4,
+                    jitter: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.22,
+                        (Math.random() - 0.5) * 0.22,
+                        (Math.random() - 0.5) * 0.22
+                    )
+                });
+            }
+            const compGeo = new THREE.BufferGeometry();
+            compGeo.setAttribute('position', new THREE.BufferAttribute(compPositions, 3));
+            const compMat = new THREE.PointsMaterial({
+                color: 0x3b82f6,
+                size: 0.24,
+                map: particleTex,
+                transparent: true,
+                opacity: 0.0,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            compareParticleSystem = new THREE.Points(compGeo, compMat);
+            compareParticleSystem.userData.meta = compMeta;
+            brainGroup.add(compareParticleSystem);
+        }
+
+        // Helper to sample point along the multi-segment VTA -> NAc -> PFC Bézier path
+        const _tempVec = new THREE.Vector3();
+        function getPointOnPrimaryPath(pathType, t, targetVec) {
+            if (pathType === 0) {
+                // Left VTA -> NAc (0..0.5), NAc -> PFC (0.5..1.0)
+                if (t < 0.5) {
+                    bezierCurvesPrimary[0].getPoint(t * 2.0, targetVec);
+                } else {
+                    bezierCurvesPrimary[1].getPoint((t - 0.5) * 2.0, targetVec);
+                }
+            } else if (pathType === 1) {
+                // Right VTA -> NAc (0..0.5), NAc -> PFC (0.5..1.0)
+                if (t < 0.5) {
+                    bezierCurvesPrimary[2].getPoint(t * 2.0, targetVec);
+                } else {
+                    bezierCurvesPrimary[3].getPoint((t - 0.5) * 2.0, targetVec);
+                }
+            } else {
+                bezierCurvesPrimary[4].getPoint(t, targetVec);
+            }
+        }
+
+        /***********************************************************************
+         * 6. REAL-TIME ANIMATION LOOP & NEUROCHEMICAL SYNCHRONIZATION
+         ***********************************************************************/
+        let lastFrameTime = performance.now();
+
+        function animate(now) {
+            requestAnimationFrame(animate);
+
+            const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+            lastFrameTime = now;
+            state.elapsedTime += dt;
+
+            // Advance timeline if playing
+            if (state.isPlaying) {
+                state.simTime += dt;
+                if (state.simTime > state.simDuration) {
+                    state.simTime = 0;
+                }
+                const slider = document.getElementById('timeline-slider');
+                if (slider) {
+                    slider.value = Math.round((state.simTime / state.simDuration) * 1000);
+                }
+            }
+
+            // Normalized timeline progress u in [0, 1]
+            const u = Math.min(1, Math.max(0, state.simTime / state.simDuration));
+            const sub = SUBSTANCES[state.primaryId];
+            const secSub = SUBSTANCES[state.secondaryId];
+
+            // Compute instantaneous Dopamine Level (% of basal, 100 = baseline)
+            const dopamineLevel = sub.curveFn(u);
+            const pfcActivity = sub.pfcCurveFn(u); // 0.1 to 1.0
+
+            //Normalized excitation factor (0 at 100% basal, up to ~1.0 at 550% peak, negative during crash)
+            const excitation = (dopamineLevel - 100) / 380;
+            const isCrash = dopamineLevel < 92;
+
+            // 1. Update 3D Colors & Incandescent Pulsing of VTA and Nucleus Accumbens
+            const primaryColor = new THREE.Color(sub.colorHex);
+            const secondaryGlow = new THREE.Color(sub.secondaryGlowHex);
+
+            // High-frequency pulse modulation
+            const pulseWave = 0.5 + 0.5 * Math.sin(state.elapsedTime * sub.pulseFreq * (1 + Math.max(0, excitation * 1.4)));
+
+            // Nucleus Accumbens scale & emissive intensity
+            const nacScale = 0.85 + Math.max(-0.25, excitation * 0.65) + pulseWave * (0.12 + Math.max(0, excitation * 0.25));
+            nacLeftMesh.scale.setScalar(nacScale);
+            nacRightMesh.scale.setScalar(nacScale);
+            nacLeftMesh.material.color.copy(primaryColor).lerp( new THREE.Color(0xffffff), Math.max(0, excitation * 0.45 * pulseWave));
+            nacRightMesh.material.color.copy(nacLeftMesh.material.color);
+
+            const haloScale = 2.1 + Math.max(-0.6, excitation * 2.6) + pulseWave * 0.55;
+            nacHaloLeft.scale.set(haloScale, haloScale, 1);
+            nacHaloRight.scale.set(haloScale, haloScale, 1);
+            nacHaloLeft.material.color.copy(primaryColor);
+            nacHaloRight.material.color.copy(primaryColor);
+            nacHaloLeft.material.opacity = isCrash ? 0.22 : Math.min(1.0, 0.55 + Math.max(0, excitation * 0.5));
+            nacHaloRight.material.opacity = nacHaloLeft.material.opacity;
+
+            // VTA Pulse
+            const vtaScale = 0.9 + Math.max(-0.15, excitation * 0.35) + pulseWave * 0.1;
+            vtaMesh.scale.setScalar(vtaScale);
+            vtaMesh.material.color.copy(secondaryGlow);
+            vtaHaloMesh.material.color.copy(secondaryGlow);
+            vtaHaloMesh.scale.setScalar(1.9 + Math.max(0, excitation * 1.2));
+
+            // Point Lights inside translucent cortex
+            nacLight.color.copy(primaryColor);
+            nacLight.intensity = isCrash ? 0.65 : (2.0 + Math.max(0, excitation * 4.5) + pulseWave * 0.9);
+            centralGlowLight.color.copy(secondaryGlow);
+            centralGlowLight.intensity = isCrash ? 0.8 : (1.8 + Math.max(0, excitation * 3.0));
+
+            // Adjust Bloom strength dynamically
+            if (bloomPass) {
+                bloomPass.strength = isCrash ? 0.72 : (1.05 + Math.max(0, excitation * 0.65));
+            }
+
+            // 2. Update Prefrontal Cortex (PFC) Executive Control Luminosity
+            // Specifically for Alcohol: noticeable weakening of PFC luminosity; for MDMA: diffuse purple/gold
+            const pfcColor = new THREE.Color(0x4f46e5);
+            if (state.primaryId === 'mdma') {
+                pfcColor.lerp(new THREE.Color(0xf59e0b), pulseWave * 0.7);
+            } else if (state.primaryId === 'alcool') {
+                pfcColor.setHex(0x1d3557);
+            } else if (isCrash) {
+                pfcColor.setHex(0x334155);
+            }
+            pfcHighlightMesh.material.color.copy(pfcColor);
+            pfcHighlightMesh.material.opacity = 0.06 + pfcActivity * 0.42;
+            if (pfcHighlightMesh.userData.pointsMat) {
+                pfcHighlightMesh.userData.pointsMat.color.copy(pfcColor).lerp(new THREE.Color(0xffffff), 0.3);
+                pfcHighlightMesh.userData.pointsMat.opacity = Math.max(0.08, pfcActivity * 0.88);
+                pfcHighlightMesh.userData.pointsMat.size = 0.07 + pfcActivity * 0.11;
+            }
+            pfcPointLight.color.copy(pfcColor);
+            pfcPointLight.intensity = Math.max(0.15, pfcActivity * 3.0);
+
+            // 3. Update Bézier Tract Tubes
+            tractMeshesPrimary.forEach((mesh) => {
+                mesh.material.color.copy(primaryColor);
+                mesh.material.opacity = isCrash ? 0.16 : Math.min(0.85, 0.35 + Math.max(0, excitation * 0.45));
+            });
+
+            // 4. Update Fast Concentrated Dopamine Particles along Bézier Curves
+            const fastPosAttr = fastParticleSystem.geometry.attributes.position;
+            const fastMeta = fastParticleSystem.userData.meta;
+            // Speed multiplier responds immediately to substance & spike phase
+            let speedMult = 1.0;
+            if (isCrash) {
+                speedMult = 0.28; // Sluggish synaptic transmission during dopamine crash
+            } else {
+                speedMult = Math.max(0.25, 0.65 + (dopamineLevel / 100) * 0.55 * (sub.particleFastBoost / 2.5));
+            }
+            if (state.primaryId === 'alcool') {
+                // Progressive slowing for alcohol
+                speedMult = Math.max(0.22, 0.85 - u * 0.55);
+            }
+
+            fastParticleSystem.material.color.copy(primaryColor).lerp(new THREE.Color(0xffffff), Math.max(0, excitation * 0.35));
+            fastParticleSystem.material.size = isCrash ? 0.15 : (0.20 + Math.max(0, excitation * 0.14));
+            fastParticleSystem.material.opacity = isCrash ? 0.42 : 0.95;
+
+            for (let i = 0; i < fastMeta.length; i++) {
+                const p = fastMeta[i];
+                p.t += dt * 0.26 * speedMult * p.speedOffset;
+                if (p.t > 1.0) p.t -= 1.0;
+
+                getPointOnPrimaryPath(p.pathType, p.t, _tempVec);
+                // Concentrate tightly during spikes
+                const tightFactor = isCrash ? 1.5 : Math.max(0.35, 1.1 - excitation * 0.5);
+                fastPosAttr.setXYZ(
+                    i,
+                    _tempVec.x + p.jitter.x * tightFactor,
+                    _tempVec.y + p.jitter.y * tightFactor,
+                    _tempVec.z + p.jitter.z * tightFactor
+                );
+            }
+            fastPosAttr.needsUpdate = true;
+
+            // 5. Update Slow Dispersed Voluminous Particles (GABA / Serotonin Modulation)
+            const slowPosAttr = slowParticleSystem.geometry.attributes.position;
+            const slowMeta = slowParticleSystem.userData.meta;
+            const slowSpeed = 0.08 * sub.particleSlowBoost;
+
+            slowParticleSystem.material.color.copy(secondaryGlow);
+            // Make slow particles larger and more prominent for GABA (Alcohol), Cannabinoid (Maconha), and Serotonin (MDMA)
+            slowParticleSystem.material.size = 0.32 + sub.modulatorLevel * 0.26;
+            slowParticleSystem.material.opacity = 0.20 + sub.modulatorLevel * 0.55;
+
+            for (let i = 0; i < slowMeta.length; i++) {
+                const p = slowMeta[i];
+                p.t += dt * slowSpeed * p.speedOffset;
+                if (p.t > 1.0) p.t -= 1.0;
+
+                getPointOnPrimaryPath(p.pathType, p.t, _tempVec);
+                const wave = Math.sin(state.elapsedTime * 1.8 + p.phase) * 0.35;
+                // For MDMA, spread widely across the entire cerebral cortex
+                const corticalSpread = state.primaryId === 'mdma' ? (1.45 + Math.max(0, excitation * 0.6)) : 0.85;
+                const r = p.spreadRadius * corticalSpread;
+
+                slowPosAttr.setXYZ(
+                    i,
+                    _tempVec.x + Math.cos(p.angle1 + wave) * r,
+                    _tempVec.y + Math.sin(p.angle2 + wave) * r * 0.75,
+                    _tempVec.z + Math.sin(p.angle1 - wave) * r
+                );
+            }
+            slowPosAttr.needsUpdate = true;
+
+            // 6. Update Secondary Substance in Comparative Mode
+            if (state.compareMode) {
+                const secDopamine = secSub.curveFn(u);
+                const secExcitation = (secDopamine - 100) / 380;
+                const secColor = new THREE.Color(secSub.chartColorHex || secSub.colorHex);
+
+                tractMeshesSecondary.forEach((m) => {
+                    m.material.color.copy(secColor);
+                    m.material.opacity = 0.5;
+                });
+
+                compareParticleSystem.material.color.copy(secColor);
+                compareParticleSystem.material.opacity = 0.9;
+                const compPosAttr = compareParticleSystem.geometry.attributes.position;
+                const compMeta = compareParticleSystem.userData.meta;
+                const compSpeed = Math.max(0.25, 0.65 + (secDopamine / 100) * 0.45);
+
+                for (let i = 0; i < compMeta.length; i++) {
+                    const p = compMeta[i];
+                    p.t += dt * 0.24 * compSpeed * p.speedOffset;
+                    if (p.t > 1.0) p.t -= 1.0;
+                    bezierCurvesSecondary[p.curveIdx].getPoint(p.t, _tempVec);
+                    compPosAttr.setXYZ(
+                        i,
+                        _tempVec.x + p.jitter.x,
+                        _tempVec.y + p.jitter.y,
+                        _tempVec.z + p.jitter.z
+                    );
+                }
+                compPosAttr.needsUpdate = true;
+            } else {
+                tractMeshesSecondary.forEach((m) => (m.material.opacity = 0));
+                compareParticleSystem.material.opacity = 0;
+            }
+
+            // Gentle holographic breathing rotation when idle
+            brainGroup.position.y = Math.sin(state.elapsedTime * 1.2) * 0.06;
+
+            // Smooth camera focus interpolation if triggered
+            if (state.isTransitioningCamera) {
+                camera.position.lerp(state.cameraDesiredEye, 0.08);
+                controls.target.lerp(state.cameraTargetPos, 0.08);
+                if (camera.position.distanceTo(state.cameraDesiredEye) < 0.08) {
+                    state.isTransitioningCamera = false;
+                }
+            }
+
+            controls.update();
+
+            // Render via EffectComposer (with Bloom) or standard Renderer
+            if (composer) {
+                composer.render();
+            } else {
+                renderer.render(scene, camera);
+            }
+
+            // Update 3D Floating Pin Positions & Synchronized 2D HUD
+            updateFloatingLabels();
+            updateHUDAndChart(u, dopamineLevel, pfcActivity, speedMult, isCrash);
+        }
+
+        /***********************************************************************
+         * 7. FLOATING 3D ANATOMICAL PINS PROJECTION
+         ***********************************************************************/
+        const _projVec = new THREE.Vector3();
+        function project3DToScreen(worldVec, elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            _projVec.copy(worldVec);
+            _projVec.y += brainGroup.position.y;
+            _projVec.project(camera);
+
+            // Hide if behind camera
+            if (_projVec.z > 1) {
+                el.style.opacity = '0';
+                return;
+            }
+
+            const x = (_projVec.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-_projVec.y * 0.5 + 0.5) * window.innerHeight;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.style.opacity = '1';
+        }
+
+        function updateFloatingLabels() {
+            project3DToScreen(ANATOMY_POS.vta, 'label-vta');
+            project3DToScreen(ANATOMY_POS.nacCenter, 'label-nac');
+            project3DToScreen(ANATOMY_POS.pfcCenter, 'label-pfc');
+        }
+
+        /***********************************************************************
+         * 8. REAL-TIME 2D CHART & HUD SYNCHRONIZATION
+         ***********************************************************************/
+        function updateHUDAndChart(u, dopamineLevel, pfcActivity, speedMult, isCrash) {
+            const sub = SUBSTANCES[state.primaryId];
+            const secSub = SUBSTANCES[state.secondaryId];
+
+            // Time label
+            document.getElementById('timeline-time-label').textContent = `t = ${state.simTime.toFixed(1)}s`;
+            document.getElementById('particle-speed-readout').textContent = `${speedMult.toFixed(1)}x`;
+
+            // Live Dopamine Readout
+            const dopRounded = Math.round(dopamineLevel);
+            const displayColor = isCrash ? '#FB7185' : (sub.chartColorHex || sub.colorHex);
+            const liveDopEl = document.getElementById('live-dopamine-number');
+            if (liveDopEl) {
+                liveDopEl.textContent = `${dopRounded}%`;
+                liveDopEl.style.color = displayColor;
+            }
+
+            // Update Page 1 Compact Corner Mini-HUD
+            const miniDopEl = document.getElementById('mini-dopamine-val');
+            if (miniDopEl) {
+                miniDopEl.textContent = `${dopRounded}%`;
+                miniDopEl.style.color = displayColor;
+            }
+            const miniPhaseEl = document.getElementById('mini-phase-badge');
+            const miniCrashPill = document.getElementById('mini-crash-pill');
+            if (miniCrashPill) {
+                if (isCrash) {
+                    miniCrashPill.textContent = `FISSURA (${dopRounded}%)`;
+                    miniCrashPill.className = 'px-1.5 py-0.5 rounded bg-rose-500/25 text-rose-300 border border-rose-500/50 font-bold animate-pulse';
+                } else if (dopamineLevel > 165) {
+                    miniCrashPill.textContent = `PICO ATIVO`;
+                    miniCrashPill.className = 'px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 border border-pink-500/40 font-semibold';
+                } else {
+                    miniCrashPill.textContent = 'ESTÁVEL';
+                    miniCrashPill.className = 'px-1.5 py-0.5 rounded bg-slate-800 text-slate-400';
+                }
+            }
+
+            // Telemetry Bars
+            const nacBar = document.getElementById('bar-nac');
+            const nacVal = document.getElementById('bar-nac-val');
+            const nacPercentWidth = Math.min(100, Math.max(6, (dopamineLevel / 600) * 100));
+            nacBar.style.width = `${nacPercentWidth}%`;
+            nacBar.style.backgroundColor = isCrash ? '#F43F5E' : (sub.chartColorHex || sub.colorHex);
+            nacVal.textContent = `${dopRounded}% Basal`;
+
+            const pfcBar = document.getElementById('bar-pfc');
+            const pfcVal = document.getElementById('bar-pfc-val');
+            const pfcPct = Math.round(pfcActivity * 100);
+            pfcBar.style.width = `${pfcPct}%`;
+            pfcVal.textContent = `${pfcPct}%`;
+            pfcVal.className = `font-mono-tech font-semibold ${pfcPct < 45 ? 'text-rose-400' : 'text-indigo-300'}`;
+
+            const modBar = document.getElementById('bar-mod');
+            const modVal = document.getElementById('bar-mod-val');
+            const modPct = Math.round(sub.modulatorLevel * 100);
+            modBar.style.width = `${modPct}%`;
+            modVal.textContent = modPct > 70 ? 'Elevada (Difusa)' : (modPct < 30 ? 'Baixa (Foco DA)' : 'Moderada');
+
+            // Neurochemical Phase Label
+            const phaseNameEl = document.getElementById('phase-name');
+            const phaseDotEl = document.getElementById('phase-indicator-dot');
+            let currentPhaseText = 'Equilíbrio Basal';
+            if (u < 0.05) {
+                currentPhaseText = 'Equilíbrio Basal Pré-Gatilho';
+                phaseDotEl.style.backgroundColor = '#38BDF8';
+            } else if (dopamineLevel > 165) {
+                currentPhaseText = 'Pico Sináptico / Hiperativação';
+                phaseDotEl.style.backgroundColor = sub.chartColorHex || sub.colorHex;
+            } else if (isCrash) {
+                currentPhaseText = 'Depleção / Crash Dopaminérgico';
+                phaseDotEl.style.backgroundColor = '#F43F5E';
+            } else {
+                currentPhaseText = 'Modulação / Recuperação Gradual';
+                phaseDotEl.style.backgroundColor = '#10B981';
+            }
+            phaseNameEl.textContent = currentPhaseText;
+            if (miniPhaseEl) miniPhaseEl.textContent = currentPhaseText;
+
+            // Crash / Craving Visual Alert Box
+            const crashBox = document.getElementById('crash-alert-box');
+            const crashBadge = document.getElementById('crash-badge');
+            const crashTitle = document.getElementById('crash-title');
+            const crashDesc = document.getElementById('crash-desc');
+            const crashIcon = document.getElementById('crash-icon-wrap');
+
+            if (isCrash) {
+                crashBox.classList.add('crash-active');
+                crashBadge.textContent = `ALERTA DE FISSURA (${dopRounded}% BASAL)`;
+                crashBadge.className = 'text-[10px] font-mono-tech px-2 py-0.5 rounded bg-rose-500/25 text-rose-300 border border-rose-500/50 font-bold';
+                crashTitle.className = 'text-xs font-bold text-rose-300 uppercase tracking-wide';
+                crashIcon.className = 'w-9 h-9 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 text-rose-400';
+                crashDesc.textContent = 'Dopamina abaixo da linha basal! O cérebro reduz receptores D2, causando disforia, anedonia e forte fissura (craving) por nova dose/aposta.';
+                crashDesc.className = 'text-xs text-rose-200/90 leading-tight mt-0.5';
+            } else {
+                crashBox.classList.remove('crash-active');
+                crashBadge.textContent = 'ACIMA DO BASAL';
+                crashBadge.className = 'text-[10px] font-mono-tech px-2 py-0.5 rounded bg-slate-800 text-slate-400';
+                crashTitle.className = 'text-xs font-bold text-slate-300 uppercase tracking-wide';
+                crashIcon.className = 'w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-slate-400';
+                crashDesc.textContent = 'Níveis acima ou na linha de equilíbrio basal (100%). Observe a queda pós-pico ao avançar a linha do tempo.';
+                crashDesc.className = 'text-xs text-slate-400 leading-tight mt-0.5';
+            }
+
+            // Draw Mini Sparkline on Page 1 (if visible) and Full Chart on Page 2 (if visible)
+            if (state.activePage === '3d' && state.miniHudVisible) {
+                drawMiniSparkline(u, sub, secSub, dopamineLevel);
+            } else if (state.activePage === 'chart') {
+                drawDopamineChart(u, sub, secSub, dopamineLevel);
+            }
+        }
+
+        function drawMiniSparkline(u, sub, secSub, currentDopamine) {
+            const canvas = document.getElementById('mini-dopamine-chart');
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+                canvas.width = Math.floor(rect.width * dpr);
+                canvas.height = Math.floor(rect.height * dpr);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            const w = rect.width;
+            const h = rect.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const yToPx = (val) => h - 4 - ((val / 620) * (h - 8));
+            const xToPx = (t) => 4 + t * (w - 8);
+
+            // Baseline 100%
+            const baseY = yToPx(100);
+            ctx.beginPath();
+            ctx.setLineDash([2, 2]);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+            ctx.moveTo(0, baseY);
+            ctx.lineTo(w, baseY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            const priColor = sub.chartColorHex || sub.colorHex;
+            const steps = 60;
+
+            // Faint full curve
+            ctx.beginPath();
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const px = xToPx(t);
+                const py = yToPx(sub.curveFn(t));
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.strokeStyle = priColor;
+            ctx.globalAlpha = 0.25;
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+
+            // Active curve up to u
+            ctx.beginPath();
+            const activeSteps = Math.max(1, Math.floor(u * steps));
+            for (let i = 0; i <= activeSteps; i++) {
+                const t = i / steps;
+                const px = xToPx(t);
+                const py = yToPx(sub.curveFn(t));
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            const curX = xToPx(u);
+            const curY = yToPx(currentDopamine);
+            ctx.lineTo(curX, curY);
+            ctx.strokeStyle = currentDopamine < 92 ? '#FB7185' : priColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(curX, curY, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawDopamineChart(u, sub, secSub, currentDopamine) {
+            const canvas = document.getElementById('dopamine-chart');
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            if (canvas.width !== Math.floor(rect.width * dpr) || canvas.height !== Math.floor(rect.height * dpr)) {
+                canvas.width = Math.floor(rect.width * dpr);
+                canvas.height = Math.floor(rect.height * dpr);
+            }
+
+            const ctx = canvas.getContext('2d');
+            ctx.save();
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width;
+            const h = rect.height;
+            const padLeft = 36;
+            const padRight = 14;
+            const padTop = 14;
+            const padBottom = 22;
+            const plotW = w - padLeft - padRight;
+            const plotH = h - padTop - padBottom;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Y-axis mapping: 0% to 620%
+            const maxY = 620;
+            const minY = 0;
+            const yToPx = (val) => padTop + plotH - ((val - minY) / (maxY - minY)) * plotH;
+            const xToPx = (normT) => padLeft + normT * plotW;
+
+            // 1. Shaded Crash Zone below 100% Baseline
+            const baselineY = yToPx(100);
+            const bottomY = yToPx(0);
+            const crashGrad = ctx.createLinearGradient(0, baselineY, 0, bottomY);
+            crashGrad.addColorStop(0, 'rgba(244, 63, 94, 0.05)');
+            crashGrad.addColorStop(1, 'rgba(244, 63, 94, 0.22)');
+            ctx.fillStyle = crashGrad;
+            ctx.fillRect(padLeft, baselineY, plotW, bottomY - baselineY);
+
+            // 2. Horizontal Grid Lines & Labels
+            ctx.font = '500 9px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#64748B';
+            ctx.textAlign = 'right';
+            [100, 300, 500].forEach((val) => {
+                const py = yToPx(val);
+                ctx.beginPath();
+                ctx.strokeStyle = val === 100 ? 'rgba(148, 163, 184, 0.55)' : 'rgba(51, 65, 85, 0.45)';
+                if (val === 100) {
+                    ctx.setLineDash([4, 4]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                ctx.lineWidth = val === 100 ? 1.2 : 1;
+                ctx.moveTo(padLeft, py);
+                ctx.lineTo(padLeft + plotW, py);
+                ctx.stroke();
+                ctx.fillText(`${val}%`, padLeft - 5, py + 3);
+            });
+            ctx.setLineDash([]);
+
+            // X-axis Time Labels
+            ctx.textAlign = 'center';
+            [0, 15, 30, 45, 60].forEach((sec) => {
+                const px = xToPx(sec / 60);
+                ctx.fillText(`${sec}s`, px, h - 5);
+            });
+
+            const steps = 120;
+
+            // 3. If Comparative Mode ON, plot Secondary Substance Curve
+            if (state.compareMode) {
+                const secColor = secSub.chartColorHex || secSub.colorHex;
+                let secPeakVal = -1;
+                let secPeakT = 0;
+
+                // Faint full preview
+                ctx.beginPath();
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const val = secSub.curveFn(t);
+                    if (val > secPeakVal) {
+                        secPeakVal = val;
+                        secPeakT = t;
+                    }
+                    const px = xToPx(t);
+                    const py = yToPx(val);
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = secColor;
+                ctx.globalAlpha = 0.25;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Active trace up to u
+                ctx.beginPath();
+                const activeSteps = Math.max(1, Math.floor(u * steps));
+                for (let i = 0; i <= activeSteps; i++) {
+                    const t = i / steps;
+                    const px = xToPx(t);
+                    const py = yToPx(secSub.curveFn(t));
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.globalAlpha = 0.9;
+                ctx.lineWidth = 2.2;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+
+                // Secondary Substance Peak Marker on Chart
+                const secPeakX = xToPx(secPeakT);
+                const secPeakY = yToPx(secPeakVal);
+                ctx.beginPath();
+                ctx.arc(secPeakX, secPeakY, 3.2, 0, Math.PI * 2);
+                ctx.fillStyle = secColor;
+                ctx.fill();
+                ctx.font = '600 8.5px "JetBrains Mono", monospace';
+                ctx.fillStyle = secColor;
+                ctx.textAlign = secPeakT > 0.65 ? 'right' : 'left';
+                const offsetX = secPeakT > 0.65 ? -6 : 6;
+                ctx.fillText(`Pico ${secSub.shortName}: ${Math.round(secPeakVal)}% (${(secPeakT * 60).toFixed(0)}s)`, secPeakX + offsetX, secPeakY + 3);
+            }
+
+            // 4. Primary Substance Faint Preview Curve & Peak Detection
+            const priColor = sub.chartColorHex || sub.colorHex;
+            let priPeakVal = -1;
+            let priPeakT = 0;
+
+            ctx.beginPath();
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const val = sub.curveFn(t);
+                if (val > priPeakVal) {
+                    priPeakVal = val;
+                    priPeakT = t;
+                }
+                const px = xToPx(t);
+                const py = yToPx(val);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.strokeStyle = priColor;
+            ctx.globalAlpha = 0.22;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+
+            // 4b. Visual Peak Callout Pin & Vertical Guide for Primary Substance
+            const peakPx = xToPx(priPeakT);
+            const peakPy = yToPx(priPeakVal);
+
+            // Subtle dashed line from Peak down to Baseline
+            ctx.beginPath();
+            ctx.setLineDash([2, 3]);
+            ctx.strokeStyle = priColor;
+            ctx.globalAlpha = 0.45;
+            ctx.lineWidth = 1;
+            ctx.moveTo(peakPx, peakPy);
+            ctx.lineTo(peakPx, baselineY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1.0;
+
+            // Diamond/Ring Marker on the Peak Apex
+            ctx.beginPath();
+            ctx.arc(peakPx, peakPy, 3.8, 0, Math.PI * 2);
+            ctx.fillStyle = '#0A0E17';
+            ctx.fill();
+            ctx.lineWidth = 1.8;
+            ctx.strokeStyle = priColor;
+            ctx.stroke();
+
+            // Peak Label Tag (shows exact % and time in seconds)
+            const peakLabel = `▲ PICO: ${Math.round(priPeakVal)}% (${(priPeakT * 60).toFixed(1)}s)`;
+            ctx.font = '700 9px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#F8FAFC';
+            ctx.textAlign = priPeakT > 0.55 ? 'right' : 'left';
+            const labelOffsetX = priPeakT > 0.55 ? -7 : 7;
+            const labelOffsetY = peakPy < padTop + 14 ? 10 : -5;
+            ctx.fillText(peakLabel, peakPx + labelOffsetX, peakPy + labelOffsetY);
+
+            // Special secondary micro-peak annotation for Bets ("Quase-ganho")
+            if (sub.id === 'bets') {
+                const nearMissT = 0.25;
+                const nearMissVal = sub.curveFn(nearMissT);
+                const nmX = xToPx(nearMissT);
+                const nmY = yToPx(nearMissVal);
+                ctx.beginPath();
+                ctx.arc(nmX, nmY, 2.8, 0, Math.PI * 2);
+                ctx.fillStyle = '#F472B6';
+                ctx.fill();
+                ctx.font = '500 8px "JetBrains Mono", monospace';
+                ctx.fillStyle = '#F472B6';
+                ctx.textAlign = 'left';
+                ctx.fillText('2º Pulso: Quase-acerto (15s)', nmX + 6, nmY + 2);
+            }
+
+            // 5. Primary Substance Active Synchronized Curve up to Current Time u
+            ctx.beginPath();
+            const activeSteps = Math.max(1, Math.floor(u * steps));
+            for (let i = 0; i <= activeSteps; i++) {
+                const t = i / steps;
+                const px = xToPx(t);
+                const py = yToPx(sub.curveFn(t));
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            const curX = xToPx(u);
+            const curY = yToPx(currentDopamine);
+            ctx.lineTo(curX, curY);
+
+            ctx.strokeStyle = currentDopamine < 92 ? '#FB7185' : priColor;
+            ctx.lineWidth = 2.8;
+            ctx.shadowColor = priColor;
+            ctx.shadowBlur = 10;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 6. Current Time Vertical Cursor & Glowing Dot
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(226, 232, 240, 0.35)';
+            ctx.lineWidth = 1;
+            ctx.moveTo(curX, padTop);
+            ctx.lineTo(curX, padTop + plotH);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(curX, curY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = currentDopamine < 92 ? '#F43F5E' : '#FFFFFF';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = priColor;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        /***********************************************************************
+         * 9. UI CONTROLS & INTERACTION HANDLERS
+         ***********************************************************************/
+        function renderSubstanceTabs() {
+            const container = document.getElementById('substance-tabs');
+            container.innerHTML = '';
+
+            Object.values(SUBSTANCES).forEach((sub) => {
+                const isSelected = sub.id === state.primaryId;
+                const btn = document.createElement('button');
+                btn.onclick = () => selectPrimarySubstance(sub.id);
+                const dotColor = sub.chartColorHex || sub.colorHex;
+
+                btn.className = `flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    isSelected
+                        ? 'bg-slate-800/95 text-white border border-slate-500 shadow-md scale-[1.02]'
+                        : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
+                }`;
+
+                btn.innerHTML = `
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${dotColor}; box-shadow: 0 0 8px ${dotColor};"></span>
+                    <span>${sub.shortName}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectPrimarySubstance(id) {
+            state.primaryId = id;
+            const sub = SUBSTANCES[id];
+            const displayColor = sub.chartColorHex || sub.colorHex;
+
+            renderSubstanceTabs();
+
+            // Update Left Panel Details
+            document.getElementById('sub-title').textContent = sub.name;
+            document.getElementById('sub-category-badge').textContent = sub.category;
+            document.getElementById('sub-peak-stat').textContent = sub.peakText;
+            document.getElementById('sub-peak-stat').style.color = displayColor;
+            document.getElementById('sub-description').textContent = sub.description;
+
+            const dot = document.getElementById('sub-color-dot');
+            dot.style.backgroundColor = displayColor;
+            dot.style.boxShadow = `0 0 10px ${displayColor}`;
+
+            // Update Mini-HUD on Page 1
+            const miniDot = document.getElementById('mini-sub-dot');
+            const miniName = document.getElementById('mini-sub-name');
+            if (miniDot) {
+                miniDot.style.backgroundColor = displayColor;
+                miniDot.style.boxShadow = `0 0 8px ${displayColor}`;
+            }
+            if (miniName) {
+                miniName.textContent = sub.shortName;
+            }
+
+            // Update Chart Legend
+            document.getElementById('legend-dot-primary').style.backgroundColor = displayColor;
+            document.getElementById('legend-name-primary').textContent = sub.shortName;
+
+            // Restart neurochemical event cycle automatically to show immediate spike reaction
+            triggerSimulationEvent();
+        }
+
+        function switchAppPage(pageId) {
+            state.activePage = pageId;
+            const page3d = document.getElementById('page-3d-view');
+            const pageChart = document.getElementById('page-chart-view');
+            const pageDetails = document.getElementById('page-details-view');
+            const labelsContainer = document.getElementById('labels-container');
+
+            const nav3d = document.getElementById('nav-page-3d');
+            const navChart = document.getElementById('nav-page-chart');
+            const navDetails = document.getElementById('nav-page-details');
+
+            const inactiveClass = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition';
+            const activeClass = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm';
+
+            nav3d.className = pageId === '3d' ? activeClass : inactiveClass;
+            navChart.className = pageId === 'chart' ? activeClass : inactiveClass;
+            navDetails.className = pageId === 'details' ? activeClass : inactiveClass;
+
+            page3d.classList.add('hidden');
+            pageChart.classList.add('hidden');
+            pageChart.classList.remove('flex');
+            pageDetails.classList.add('hidden');
+            pageDetails.classList.remove('flex');
+
+            if (pageId === '3d') {
+                page3d.classList.remove('hidden');
+                if (labelsContainer) labelsContainer.style.display = 'block';
+            } else if (pageId === 'chart') {
+                pageChart.classList.remove('hidden');
+                pageChart.classList.add('flex');
+                if (labelsContainer) labelsContainer.style.display = 'none';
+            } else if (pageId === 'details') {
+                pageDetails.classList.remove('hidden');
+                pageDetails.classList.add('flex');
+                if (labelsContainer) labelsContainer.style.display = 'none';
+            }
+        }
+
+        function toggleMiniHud(show) {
+            state.miniHudVisible = show;
+            const card = document.getElementById('mini-hud-card');
+            const btn = document.getElementById('show-minihud-btn');
+            if (show) {
+                card.classList.remove('hidden');
+                btn.classList.add('hidden');
+                btn.classList.remove('flex');
+            } else {
+                card.classList.add('hidden');
+                btn.classList.remove('hidden');
+                btn.classList.add('flex');
+            }
+        }
+
+        function triggerSimulationEvent() {
+            // Jump right to the absorption trigger onset (t = 1.8s) so user feels zero delay on spike acceleration
+            state.simTime = 1.8;
+            state.isPlaying = true;
+            updatePlayPauseIcons();
+
+            // Visual pulse on the Simulate button
+            const btn = document.getElementById('simulate-btn');
+            btn.classList.add('ring-4', 'ring-pink-400/50');
+            setTimeout(() => btn.classList.remove('ring-4', 'ring-pink-400/50'), 280);
+        }
+
+        function togglePlayPause() {
+            state.isPlaying = !state.isPlaying;
+            updatePlayPauseIcons();
+        }
+
+        function updatePlayPauseIcons() {
+            const pauseIcon = document.getElementById('icon-pause');
+            const playIcon = document.getElementById('icon-play');
+            if (state.isPlaying) {
+                pauseIcon.classList.remove('hidden');
+                playIcon.classList.add('hidden');
+            } else {
+                pauseIcon.classList.add('hidden');
+                playIcon.classList.remove('hidden');
+            }
+        }
+
+        function onTimelineScrub(val) {
+            state.simTime = (parseFloat(val) / 1000) * state.simDuration;
+        }
+
+        // Find and jump directly to the mathematical peak of the active substance
+        function jumpToPeak() {
+            const sub = SUBSTANCES[state.primaryId];
+            let bestT = 0;
+            let maxVal = -1;
+            for (let i = 0; i <= 500; i++) {
+                const t = i / 500;
+                const v = sub.curveFn(t);
+                if (v > maxVal) {
+                    maxVal = v;
+                    bestT = t;
+                }
+            }
+            state.simTime = bestT * state.simDuration;
+            state.isPlaying = false;
+            updatePlayPauseIcons();
+            const slider = document.getElementById('timeline-slider');
+            if (slider) slider.value = Math.round(bestT * 1000);
+        }
+
+        // Find and jump directly to the deepest crash point (minimum after peak)
+        function jumpToCrash() {
+            const sub = SUBSTANCES[state.primaryId];
+            let minT = 0.5;
+            let minVal = 9999;
+            for (let i = 150; i <= 500; i++) {
+                const t = i / 500;
+                const v = sub.curveFn(t);
+                if (v < minVal) {
+                    minVal = v;
+                    minT = t;
+                }
+            }
+            state.simTime = minT * state.simDuration;
+            state.isPlaying = false;
+            updatePlayPauseIcons();
+            const slider = document.getElementById('timeline-slider');
+            if (slider) slider.value = Math.round(minT * 1000);
+        }
+
+        function togglePeaksGuide() {
+            const panel = document.getElementById('peaks-guide-panel');
+            if (!panel) return;
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+            } else {
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+            }
+        }
+
+        function inspectSubstancePeak(id) {
+            selectPrimarySubstance(id);
+            jumpToPeak();
+        }
+
+        function toggleCompareMode() {
+            state.compareMode = !state.compareMode;
+            const btn = document.getElementById('compare-toggle-btn');
+            const dot = document.getElementById('compare-dot');
+            const selectorBox = document.getElementById('compare-selector-box');
+            const legendSec = document.getElementById('legend-secondary-wrap');
+
+            if (state.compareMode) {
+                btn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-xl border border-amber-400/60 bg-amber-500/15 text-xs font-semibold text-amber-200 transition';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]';
+                selectorBox.classList.remove('hidden');
+                selectorBox.classList.add('flex');
+                legendSec.classList.remove('hidden');
+                legendSec.classList.add('flex');
+                setSecondarySubstance(document.getElementById('compare-select').value);
+            } else {
+                btn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 hover:bg-slate-800/90 text-xs font-medium text-slate-200 transition';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-500 transition';
+                selectorBox.classList.add('hidden');
+                selectorBox.classList.remove('flex');
+                legendSec.classList.add('hidden');
+                legendSec.classList.remove('flex');
+            }
+        }
+
+        function setSecondarySubstance(id) {
+            state.secondaryId = id;
+            const secSub = SUBSTANCES[id];
+            const secColor = secSub.chartColorHex || secSub.colorHex;
+            document.getElementById('legend-dot-secondary').style.backgroundColor = secColor;
+            document.getElementById('legend-name-secondary').textContent = secSub.shortName;
+        }
+
+        function focusCamera(preset) {
+            state.isTransitioningCamera = true;
+            document.querySelectorAll('.cam-btn').forEach((b) => {
+                b.className = 'cam-btn px-2.5 py-1 rounded-lg font-medium text-slate-300 hover:text-white transition';
+            });
+            const activeBtn = document.getElementById(`cam-${preset}`);
+            if (activeBtn) {
+                activeBtn.className = 'cam-btn px-2.5 py-1 rounded-lg font-medium transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+            }
+
+            if (preset === 'overview') {
+                state.cameraTargetPos.set(0, 0.3, 0.4);
+                state.cameraDesiredEye.set(6.8, 3.2, 10.5);
+            } else if (preset === 'vta') {
+                state.cameraTargetPos.copy(ANATOMY_POS.vta);
+                state.cameraDesiredEye.set(3.8, -0.6, 3.8);
+            } else if (preset === 'nac') {
+                state.cameraTargetPos.copy(ANATOMY_POS.nacCenter);
+                state.cameraDesiredEye.set(3.4, 0.8, 5.6);
+            } else if (preset === 'pfc') {
+                state.cameraTargetPos.copy(ANATOMY_POS.pfcCenter);
+                state.cameraDesiredEye.set(4.2, 2.6, 7.6);
+            }
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            if (!container || !renderer || !camera) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+            if (composer) {
+                composer.setSize(width, height);
+            }
+        }
+
+        // Start application on window load
+        window.onload = function () {
+            initThreeScene();
+            selectPrimarySubstance('bets');
+            requestAnimationFrame(animate);
+        };
+    </script>
+</body>
+</html>
