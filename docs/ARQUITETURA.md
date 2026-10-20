@@ -1,6 +1,6 @@
 # Arquitetura Técnica
 
-O NeuroSim 3D é composto por um único arquivo, `neurobiologia_das_drogas_3d.html`, dividido em marcação (HTML/Tailwind), estilos e um bloco `<script>` com a lógica.
+O NeuroSim 3D é composto por um único arquivo, `index.html`, dividido em marcação (HTML/Tailwind), estilos e um bloco `<script>` com a lógica.
 
 ## Dependências (CDN)
 

@@ -40,7 +40,7 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 ## Como executar
 
 1. Clone o repositório.
-2. Abra o arquivo `neurobiologia_das_drogas_3d.html` em um navegador moderno.
+2. Abra o arquivo `index.html` em um navegador moderno.
 
 É necessária conexão com a internet para o carregamento das bibliotecas via CDN.
 
@@ -48,7 +48,7 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 
 | Arquivo | Descrição |
 | --- | --- |
-| `neurobiologia_das_drogas_3d.html` | Aplicação completa |
+| `index.html` | Aplicação completa |
 | `manual_de_uso.md` | Manual de uso para o usuário final |
 | `README.md` | Este documento |
 | `CONTRIBUTING.md` | Orientações para contribuição |
