@@ -30,8 +30,8 @@ O Dopamapa apresenta um modelo cerebral tridimensional gerado proceduralmente e 
 
 ### Regiões cerebrais abordadas
 
-- Versão publicada (`index.html`): Área Tegmental Ventral (VTA), Núcleo Accumbens e Córtex Pré-Frontal.
-- Versão 2.0 (`index_v2.0.html`): atlas com 10 regiões e vias, incluindo amígdala, córtices frontal, pré-frontal, parietal, temporal e occipital, VTA, Núcleo Accumbens e as vias mesolímbica e mesocortical.
+- Versão 2.0, publicada (`index.html`): atlas com 10 regiões e vias, incluindo amígdala, córtices frontal, pré-frontal, parietal, temporal e occipital, VTA, Núcleo Accumbens e as vias mesolímbica e mesocortical.
+- Versão 1, arquivada (`index_v1.html`): Área Tegmental Ventral (VTA), Núcleo Accumbens e Córtex Pré-Frontal.
 
 ### Funcionalidades
 
@@ -42,7 +42,7 @@ O Dopamapa apresenta um modelo cerebral tridimensional gerado proceduralmente e 
 - Modo comparativo entre duas substâncias no mesmo cérebro.
 - Partículas de neurotransmissores, vias dopaminérgicas e efeito de brilho (bloom).
 
-A versão 2.0, em desenvolvimento, acrescenta:
+A versão 2.0, atualmente publicada, acrescenta em relação à versão 1:
 
 - Atlas anatômico com rótulos flutuantes, linhas-guia e foco de câmera por região.
 - Ranking e mapa rápido de picos calculados diretamente a partir das curvas.
@@ -62,7 +62,7 @@ Todas as dependências estão versionadas na pasta `vendor/`, portanto o projeto
 ## Como executar
 
 1. Clone o repositório.
-2. Abra em um navegador moderno o arquivo `index.html` (versão publicada) ou `index_v2.0.html` (versão 2.0, em desenvolvimento).
+2. Abra em um navegador moderno o arquivo `index.html` (versão 2.0). A versão 1 continua disponível em `index_v1.html`.
 
 Não é necessária conexão com a internet, pois as bibliotecas e fontes estão em `vendor/`.
 
@@ -70,8 +70,9 @@ Não é necessária conexão com a internet, pois as bibliotecas e fontes estão
 
 | Arquivo | Descrição |
 | --- | --- |
-| `index.html` | Aplicação publicada (trilha Dopamapa, versão 1) |
-| `index_v2.0.html` | Trilha Dopamapa, versão 2.0 (em desenvolvimento) |
+| `index.html` | Aplicação publicada (trilha Dopamapa, versão 2.0) |
+| `index_v1.html` | Trilha Dopamapa, versão 1 (arquivada, mantida como referência) |
+| `index_v2.0.html` | Redirecionamento para `index.html`, preserva links antigos da versão 2.0 |
 | `manual_de_uso.md` | Manual de uso para o usuário final |
 | `README.md` | Este documento |
 | `CONTRIBUTING.md` | Orientações para contribuição |

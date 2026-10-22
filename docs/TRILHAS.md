@@ -10,7 +10,7 @@ O Cortexplora parte da premissa de que cada cérebro funciona de uma forma. A pl
 
 - **Tema:** circuito de recompensa do cérebro durante o consumo de substâncias e em comportamentos de risco.
 - **Conteúdo:** apostas eletrônicas (bets), crack, cocaína, álcool, maconha (THC) e drogas sintéticas (MDMA).
-- **Arquivos:** `index.html` (versão 1, publicada) e `index_v2.0.html` (versão 2.0, em desenvolvimento).
+- **Arquivos:** `index.html` (versão 2.0, publicada) e `index_v1.html` (versão 1, arquivada).
 - **Dados:** `SUBSTANCES` (curvas de dopamina e de atividade do córtex pré-frontal) e, na versão 2.0, `BRAIN_REGIONS` (atlas anatômico).
 - **Limitações declaradas:** as curvas são modelos ilustrativos em tempo normalizado (60 segundos) e não representam medições reais nem a duração real dos efeitos.
 

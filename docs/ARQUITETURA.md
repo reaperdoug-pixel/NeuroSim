@@ -4,8 +4,10 @@ O Cortexplora é organizado em trilhas temáticas (consulte [TRILHAS.md](TRILHAS
 
 | Arquivo | Versão | Situação |
 | --- | --- | --- |
-| `index.html` | 1 | Publicada |
-| `index_v2.0.html` | 2.0 | Em desenvolvimento |
+| `index.html` | 2.0 | Publicada |
+| `index_v1.html` | 1 | Arquivada (referência) |
+
+O arquivo `index_v2.0.html` apenas redireciona para `index.html`, preservando links antigos da versão 2.0.
 
 ## Dependências (locais, em `vendor/`)
 
@@ -14,7 +16,7 @@ O Cortexplora é organizado em trilhas temáticas (consulte [TRILHAS.md](TRILHAS
 
 As duas versões carregam exclusivamente arquivos locais; nenhuma requisição é feita a CDNs externos.
 
-## Versão 1 (`index.html`)
+## Versão 1 (`index_v1.html`)
 
 | Grupo | Funções principais |
 | --- | --- |
@@ -27,7 +29,7 @@ As duas versões carregam exclusivamente arquivos locais; nenhuma requisição �
 | Controle de tempo | `triggerSimulationEvent`, `togglePlayPause`, `onTimelineScrub`, `jumpToPeak`, `jumpToCrash` |
 | Comparação | `toggleCompareMode`, `setSecondarySubstance`, `togglePeaksGuide`, `inspectSubstancePeak` |
 
-## Versão 2.0 (`index_v2.0.html`)
+## Versão 2.0 (`index.html`)
 
 | Grupo | Funções e estruturas principais |
 | --- | --- |
