@@ -1,7 +1,7 @@
-# 🧠 Manual de Uso: Cada Cérebro · Dopamapa
+# 🧠 Manual de Uso: Cortexplora · Dopamapa
 **Como Funcionam as Drogas e Comportamentos no Cérebro**
 
-Bem-vindo ao **Cada Cérebro**! A plataforma mostra, de forma visual e em tempo real, como o cérebro funciona em diferentes situações, organizada em trilhas temáticas. Este manual cobre a trilha **Dopamapa**, que mostra o que acontece dentro do cérebro (no chamado **circuito de recompensa**) quando uma pessoa consome diferentes substâncias ou tem comportamentos de risco, como apostas eletrônicas.
+Bem-vindo ao **Cortexplora**! A plataforma mostra, de forma visual e em tempo real, como o cérebro funciona em diferentes situações, organizada em trilhas temáticas. Este manual cobre a trilha **Dopamapa**, que mostra o que acontece dentro do cérebro (no chamado **circuito de recompensa**) quando uma pessoa consome diferentes substâncias ou tem comportamentos de risco, como apostas eletrônicas.
 
 *O projeto se chamava NeuroSim 3D até outubro de 2026.*
 

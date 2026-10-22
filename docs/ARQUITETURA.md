@@ -1,6 +1,6 @@
 # Arquitetura Técnica
 
-O Cada Cérebro é organizado em trilhas temáticas (consulte [TRILHAS.md](TRILHAS.md)). Atualmente existe uma trilha, o **Dopamapa**, disponível em duas versões, cada uma em um único arquivo HTML dividido em marcação (HTML/Tailwind), estilos e um bloco `<script>` com a lógica:
+O Cortexplora é organizado em trilhas temáticas (consulte [TRILHAS.md](TRILHAS.md)). Atualmente existe uma trilha, o **Dopamapa**, disponível em duas versões, cada uma em um único arquivo HTML dividido em marcação (HTML/Tailwind), estilos e um bloco `<script>` com a lógica:
 
 | Arquivo | Versão | Situação |
 | --- | --- | --- |

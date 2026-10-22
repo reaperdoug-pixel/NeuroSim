@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cada Cérebro · Dopamapa: como drogas e apostas agem no cérebro</title>
+    <title>Cortexplora · Dopamapa: como drogas e apostas agem no cérebro</title>
     <!-- Tailwind CSS (local) -->
     <script src="vendor/tailwind.js"></script>
     <!-- Fontes locais: Inter e JetBrains Mono -->
@@ -177,7 +177,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h1 class="text-xs sm:text-sm font-bold tracking-wider text-white font-mono-tech whitespace-nowrap">CADA CÉREBRO</h1>
+                            <h1 class="text-xs sm:text-sm font-bold tracking-wider text-white font-mono-tech whitespace-nowrap">CORTEXPLORA</h1>
                             <!-- Trilha ativa: Dopamapa (substâncias e comportamentos de risco). Ver docs/TRILHAS.md -->
                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-mono-tech uppercase tracking-wider bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/30 whitespace-nowrap" title="Trilha Dopamapa: substâncias e comportamentos de risco">Dopamapa</span>
                         </div>
@@ -652,7 +652,7 @@
             <div class="hidden sm:flex items-center justify-between px-3 py-0.5 text-[10px] font-mono-tech text-slate-400">
                 <div class="flex items-center gap-2">
                     <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                    <span class="text-slate-300 font-semibold">CADA CÉREBRO · DOPAMAPA v2.0</span>
+                    <span class="text-slate-300 font-semibold">CORTEXPLORA · DOPAMAPA v2.0</span>
                     <span>• Clique em qualquer região cerebral para viajar até a estrutura</span>
                 </div>
                 <div class="flex items-center gap-3">
@@ -1218,7 +1218,7 @@
 
         // Sem WebGL o app continua útil: gráfico, picos e detalhes funcionam; só o cérebro 3D some
         function showWebGLFallback(err) {
-            console.error('Cada Cérebro: não foi possível iniciar o WebGL.', err);
+            console.error('Cortexplora: não foi possível iniciar o WebGL.', err);
             window.removeEventListener('resize', onWindowResize);
             if (controls) controls.dispose();
             if (renderer) {

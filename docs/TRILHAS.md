@@ -2,7 +2,7 @@
 
 ## Conceito
 
-O Cada Cérebro parte da premissa de que cada cérebro funciona de uma forma. A plataforma organiza o conteúdo em **trilhas** temáticas independentes, cada uma com objetivo, dados e linguagem próprios, compartilhando apenas o motor de visualização 3D e o padrão de interface.
+O Cortexplora parte da premissa de que cada cérebro funciona de uma forma. A plataforma organiza o conteúdo em **trilhas** temáticas independentes, cada uma com objetivo, dados e linguagem próprios, compartilhando apenas o motor de visualização 3D e o padrão de interface.
 
 ## Trilhas
 

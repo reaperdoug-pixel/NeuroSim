@@ -1,6 +1,6 @@
 # Guia de Contribuição
 
-Obrigado pelo interesse em contribuir com o Cada Cérebro (anteriormente NeuroSim 3D).
+Obrigado pelo interesse em contribuir com o Cortexplora (anteriormente NeuroSim 3D).
 
 ## Fluxo sugerido
 
