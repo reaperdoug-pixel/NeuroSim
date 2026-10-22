@@ -49,15 +49,16 @@ Descartadas:
 
 - **DNS:** registro CNAME `cortexplora` apontando para `reaperdoug-pixel.github.io`, na zona `degehub.io` (Hostinger). O registro provisório `cadacerebro` foi removido.
 - **GitHub Pages:** domínio personalizado `cortexplora.degehub.io`, definido no arquivo `CNAME`.
-- **Endereço antigo:** `neurosim.degehub.io` mantém o registro DNS, mas deixa de exibir o site, pois o GitHub Pages atende a um único domínio personalizado por repositório.
+- **Endereço antigo:** o registro DNS `neurosim` foi removido em 22/10/2026. Como ele apontava para o GitHub Pages sem um site associado, havia risco de sequestro do subdomínio (*subdomain takeover*). O endereço `neurosim.degehub.io` passou a ser atendido pelo registro curinga (`*`) da zona e não exibe mais o projeto.
 
 ## Pendências
 
 - [x] Criar o registro DNS de `cortexplora.degehub.io` apontando para o GitHub Pages.
 - [x] Atualizar o arquivo `CNAME` e o domínio do GitHub Pages para `cortexplora.degehub.io`.
 - [x] Atualizar o link "Acesse online" do `README.md`.
+- [x] Remover o registro DNS de `neurosim.degehub.io`, que apontava para o GitHub Pages sem site associado.
 - [ ] Quando o projeto estiver concluído, registrar o domínio `cortexplora.com.br` (opcionalmente, também `cortexplora.com`).
 - [ ] Quando o projeto estiver concluído, consultar especialista e depositar a marca no INPI, nas classes 41 (educação), 9 (software) e 42 (serviços de tecnologia).
-- [ ] Opcional: redirecionar `neurosim.degehub.io` para o novo endereço (por regra no provedor de DNS ou por um repositório separado no GitHub Pages).
+- [ ] Opcional: redirecionar `neurosim.degehub.io` para o novo endereço por regra de redirecionamento na Hostinger. Não recrie um CNAME para o GitHub Pages sem um site associado a ele.
 - [ ] Opcional: renomear o repositório `reaperdoug-pixel/NeuroSim` no GitHub. O GitHub redireciona automaticamente a URL antiga.
 - [ ] Opcional: renomear a pasta local do projeto.
