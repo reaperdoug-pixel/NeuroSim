@@ -1,12 +1,23 @@
-# NeuroSim 3D
+# Cada Cérebro
 
-Simulador educativo e interativo em 3D que demonstra, em tempo real, o que ocorre no circuito de recompensa do cérebro durante o consumo de diferentes substâncias e em comportamentos de risco, como apostas eletrônicas.
+Plataforma educativa e interativa em 3D que mostra, de forma visual e em tempo real, como o cérebro funciona em diferentes situações. O conteúdo é organizado em trilhas temáticas independentes, voltadas a público leigo.
 
 **Acesse online:** [neurosim.degehub.io](https://neurosim.degehub.io)
 
-## Visão geral
+> O projeto se chamava **NeuroSim 3D**. O nome foi alterado em outubro de 2026 por conflito com marcas e softwares já existentes. O endereço online ainda será migrado; consulte [docs/MIGRACAO_DE_NOME.md](docs/MIGRACAO_DE_NOME.md).
 
-O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente e uma curva dopaminérgica dinâmica para cada substância, permitindo observar as fases de absorção, pico e queda (crash). O objetivo é puramente didático, voltado a público leigo.
+## Trilhas
+
+| Trilha | Tema | Situação |
+| --- | --- | --- |
+| **Dopamapa** | Circuito de recompensa do cérebro durante o consumo de substâncias e em comportamentos de risco, como apostas eletrônicas | Disponível |
+| **Neurodiversidade** (nome provisório) | Funcionamento do cérebro de pessoas no espectro autista, com TDAH e com outras condições do neurodesenvolvimento | Planejada |
+
+As trilhas são independentes por princípio: condições do neurodesenvolvimento não são apresentadas no mesmo eixo que o efeito de substâncias. As diretrizes editoriais e técnicas estão em [docs/TRILHAS.md](docs/TRILHAS.md).
+
+## Trilha Dopamapa
+
+O Dopamapa apresenta um modelo cerebral tridimensional gerado proceduralmente e uma curva dopaminérgica dinâmica para cada substância, permitindo observar as fases de absorção, pico e queda (crash). O objetivo é puramente didático.
 
 ### Substâncias e comportamentos simulados
 
@@ -19,11 +30,10 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 
 ### Regiões cerebrais abordadas
 
-- Área Tegmental Ventral (VTA)
-- Núcleo Accumbens
-- Córtex Pré-Frontal
+- Versão publicada (`index.html`): Área Tegmental Ventral (VTA), Núcleo Accumbens e Córtex Pré-Frontal.
+- Versão 2.0 (`index_v2.0.html`): atlas com 10 regiões e vias, incluindo amígdala, córtices frontal, pré-frontal, parietal, temporal e occipital, VTA, Núcleo Accumbens e as vias mesolímbica e mesocortical.
 
-## Funcionalidades
+### Funcionalidades
 
 - Visualização 3D livre do cérebro (rotação e zoom).
 - Gráfico da curva dopaminérgica em tempo real, com indicação de pico e alerta de fissura/crash.
@@ -31,6 +41,14 @@ O NeuroSim 3D apresenta um modelo cerebral tridimensional gerado proceduralmente
 - Linha do tempo com play/pause e controle manual (scrub).
 - Modo comparativo entre duas substâncias no mesmo cérebro.
 - Partículas de neurotransmissores, vias dopaminérgicas e efeito de brilho (bloom).
+
+A versão 2.0, em desenvolvimento, acrescenta:
+
+- Atlas anatômico com rótulos flutuantes, linhas-guia e foco de câmera por região.
+- Ranking e mapa rápido de picos calculados diretamente a partir das curvas.
+- Indicador de dopamina com quatro estados (acima do basal, no basal, abaixo do basal e fissura).
+- Controle de velocidade da simulação e atalhos de teclado.
+- Funcionamento sem WebGL (o gráfico, os picos e os detalhes continuam disponíveis) e layout adaptado a telas pequenas.
 
 ## Tecnologias
 
@@ -44,7 +62,7 @@ Todas as dependências estão versionadas na pasta `vendor/`, portanto o projeto
 ## Como executar
 
 1. Clone o repositório.
-2. Abra o arquivo `index.html` em um navegador moderno.
+2. Abra em um navegador moderno o arquivo `index.html` (versão publicada) ou `index_v2.0.html` (versão 2.0, em desenvolvimento).
 
 Não é necessária conexão com a internet, pois as bibliotecas e fontes estão em `vendor/`.
 
@@ -52,17 +70,20 @@ Não é necessária conexão com a internet, pois as bibliotecas e fontes estão
 
 | Arquivo | Descrição |
 | --- | --- |
-| `index.html` | Aplicação completa |
+| `index.html` | Aplicação publicada (trilha Dopamapa, versão 1) |
+| `index_v2.0.html` | Trilha Dopamapa, versão 2.0 (em desenvolvimento) |
 | `manual_de_uso.md` | Manual de uso para o usuário final |
 | `README.md` | Este documento |
 | `CONTRIBUTING.md` | Orientações para contribuição |
 | `LICENSE` | Licença MIT |
 | `vendor/` | Bibliotecas e fontes locais (Three.js, Tailwind, Inter, JetBrains Mono) |
 | `docs/ARQUITETURA.md` | Visão técnica do código |
+| `docs/TRILHAS.md` | Conceito, diretrizes editoriais e técnicas das trilhas |
+| `docs/MIGRACAO_DE_NOME.md` | Registro da mudança de nome e pendências de migração |
 
 ## Aviso
 
-Este projeto possui finalidade exclusivamente educacional. Os modelos são simplificações ilustrativas e não substituem orientação médica, diagnóstico ou tratamento. Em caso de dependência química ou de comportamento compulsivo, procure um profissional de saúde.
+Este projeto possui finalidade exclusivamente educacional. Os modelos são simplificações ilustrativas e não substituem orientação médica, diagnóstico ou tratamento. Nenhuma trilha tem finalidade diagnóstica. Em caso de dependência química ou de comportamento compulsivo, procure um profissional de saúde.
 
 ## Licença
 

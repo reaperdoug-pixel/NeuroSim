@@ -1,7 +1,9 @@
-# 🧠 Manual de Uso — NeuroSim 3D
+# 🧠 Manual de Uso: Cada Cérebro · Dopamapa
 **Como Funcionam as Drogas e Comportamentos no Cérebro**
 
-Bem-vindo ao **NeuroSim 3D**! Este simulador interativo foi criado para mostrar, de forma visual e em tempo real, o que acontece dentro do cérebro (no chamado **circuito de recompensa**) quando uma pessoa consome diferentes substâncias ou tem comportamentos de risco, como apostas eletrônicas.
+Bem-vindo ao **Cada Cérebro**! A plataforma mostra, de forma visual e em tempo real, como o cérebro funciona em diferentes situações, organizada em trilhas temáticas. Este manual cobre a trilha **Dopamapa**, que mostra o que acontece dentro do cérebro (no chamado **circuito de recompensa**) quando uma pessoa consome diferentes substâncias ou tem comportamentos de risco, como apostas eletrônicas.
+
+*O projeto se chamava NeuroSim 3D até outubro de 2026.*
 
 Não é preciso nenhum conhecimento prévio em biologia para usar. Siga o passo a passo abaixo para explorar a ferramenta:
 
