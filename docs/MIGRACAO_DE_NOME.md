@@ -1,8 +1,10 @@
-# Migração de Nome: NeuroSim 3D para Cada Cérebro
+# Migração de Nome: NeuroSim 3D para Cortexplora
 
 ## Decisão
 
-Em 22/10/2026, o projeto passou a se chamar **Cada Cérebro**. O nome **Dopamapa** passou a identificar a trilha sobre substâncias e comportamentos de risco. A estrutura de trilhas está descrita em [TRILHAS.md](TRILHAS.md).
+Em 22/10/2026, o projeto passou a se chamar **Cortexplora**. O nome **Dopamapa** identifica a trilha sobre substâncias e comportamentos de risco. A estrutura de trilhas está descrita em [TRILHAS.md](TRILHAS.md).
+
+O nome **Cada Cérebro** chegou a ser adotado no mesmo dia, mas foi substituído por Cortexplora, considerado mais forte como marca. A expressão "cada cérebro é único" permanece disponível como slogan.
 
 ## Motivo
 
@@ -17,12 +19,24 @@ Critérios: busca na web, busca de marcas no INPI (por radical, em todas as clas
 
 | Nome | Web | INPI | `.com.br` | `.com` | GitHub |
 | --- | --- | --- | --- | --- | --- |
-| Cada Cérebro | Sem uso identificado | Sem resultados | Disponível | Disponível | Nenhum repositório |
+| Cortexplora | Sem uso identificado | Sem resultados para o nome | Disponível | Disponível | Nenhum repositório |
 | Dopamapa | Sem uso identificado | Sem resultados | Disponível | Disponível | Nenhum repositório |
+| Cada Cérebro (não adotado) | Sem uso identificado | Sem resultados | Disponível | Disponível | Nenhum repositório |
 
-Alternativas também disponíveis na data da verificação: Mentescópio, Cortexplora e Sinaptário.
+### Atenção: radical "cortex" no INPI
 
-Alternativas descartadas:
+Embora o nome Cortexplora não tenha registros, a busca pelo radical "cortex" retornou marcas ativas nas classes de interesse do projeto:
+
+- **Classe 41 (educação):** 33 processos, 13 vigentes ou em andamento, entre eles CÓRTEX e COLÉGIO CÓRTEX (empresa educacional) e Cortex Academy.
+- **Classe 42 (serviços de tecnologia):** 58 processos, 30 vigentes ou em andamento, entre eles diversas marcas CORTEX da Cortex Intelligence Tecnologia S.A.
+
+Como o nome começa pelo mesmo elemento, um depósito de marca pode sofrer oposição. Recomenda-se consultar especialista em propriedade industrial antes do depósito.
+
+### Alternativas
+
+Também disponíveis na data da verificação: Mentescópio e Sinaptário.
+
+Descartadas:
 
 - **Cerebrário:** domínio `.com` em uso por agência criativa e repositório homônimo de visualização 3D de cérebro.
 - **Cerebroscópio:** termo de dicionário para instrumento de diagnóstico, conotação inadequada.
@@ -31,13 +45,19 @@ Alternativas descartadas:
 
 **Limitações:** esta verificação não constitui parecer jurídico. A busca no INPI abrange apenas o Brasil. Não foram consultados os registros dos Estados Unidos (USPTO) e da União Europeia (EUIPO), nem a disponibilidade de perfis em redes sociais.
 
+## Endereço online
+
+- **DNS:** registro CNAME `cortexplora` apontando para `reaperdoug-pixel.github.io`, na zona `degehub.io` (Hostinger). O registro provisório `cadacerebro` foi removido.
+- **GitHub Pages:** domínio personalizado `cortexplora.degehub.io`, definido no arquivo `CNAME`.
+- **Endereço antigo:** `neurosim.degehub.io` mantém o registro DNS, mas deixa de exibir o site, pois o GitHub Pages atende a um único domínio personalizado por repositório.
+
 ## Pendências
 
-- [ ] Registrar o domínio `cadacerebro.com.br` (opcionalmente, também `cadacerebro.com`).
-- [ ] Depositar a marca no INPI, nas classes 41 (educação), 9 (software) e 42 (serviços de tecnologia).
-- [ ] Criar o registro DNS de `cadacerebro.degehub.io` apontando para o GitHub Pages.
-- [ ] Após a propagação do DNS, atualizar o arquivo `CNAME` para `cadacerebro.degehub.io` e configurar o domínio nas opções do GitHub Pages. Alterar o `CNAME` antes disso deixa o site fora do ar.
-- [ ] Manter `neurosim.degehub.io` redirecionando para o novo endereço durante um período de transição (por exemplo, por regra no provedor de DNS ou por um repositório separado no GitHub Pages).
-- [ ] Renomear o repositório `reaperdoug-pixel/NeuroSim` no GitHub. O GitHub redireciona automaticamente a URL antiga.
-- [ ] Atualizar o link "Acesse online" do `README.md`.
+- [x] Criar o registro DNS de `cortexplora.degehub.io` apontando para o GitHub Pages.
+- [x] Atualizar o arquivo `CNAME` e o domínio do GitHub Pages para `cortexplora.degehub.io`.
+- [x] Atualizar o link "Acesse online" do `README.md`.
+- [ ] Quando o projeto estiver concluído, registrar o domínio `cortexplora.com.br` (opcionalmente, também `cortexplora.com`).
+- [ ] Quando o projeto estiver concluído, consultar especialista e depositar a marca no INPI, nas classes 41 (educação), 9 (software) e 42 (serviços de tecnologia).
+- [ ] Opcional: redirecionar `neurosim.degehub.io` para o novo endereço (por regra no provedor de DNS ou por um repositório separado no GitHub Pages).
+- [ ] Opcional: renomear o repositório `reaperdoug-pixel/NeuroSim` no GitHub. O GitHub redireciona automaticamente a URL antiga.
 - [ ] Opcional: renomear a pasta local do projeto.

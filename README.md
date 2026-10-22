@@ -1,10 +1,10 @@
-# Cada Cérebro
+# Cortexplora
 
 Plataforma educativa e interativa em 3D que mostra, de forma visual e em tempo real, como o cérebro funciona em diferentes situações. O conteúdo é organizado em trilhas temáticas independentes, voltadas a público leigo.
 
-**Acesse online:** [neurosim.degehub.io](https://neurosim.degehub.io)
+**Acesse online:** [cortexplora.degehub.io](https://cortexplora.degehub.io)
 
-> O projeto se chamava **NeuroSim 3D**. O nome foi alterado em outubro de 2026 por conflito com marcas e softwares já existentes. O endereço online ainda será migrado; consulte [docs/MIGRACAO_DE_NOME.md](docs/MIGRACAO_DE_NOME.md).
+> O projeto se chamava **NeuroSim 3D**. O nome foi alterado em outubro de 2026 por conflito com marcas e softwares já existentes, e o endereço passou de `neurosim.degehub.io` para `cortexplora.degehub.io`. Consulte [docs/MIGRACAO_DE_NOME.md](docs/MIGRACAO_DE_NOME.md).
 
 ## Trilhas
 
