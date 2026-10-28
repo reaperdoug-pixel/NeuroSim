@@ -90,8 +90,10 @@ Cada substância e região tem sua própria cor de dado (âmbar nas Apostas, ver
 **Character:** Inter dá leitura limpa para texto didático; JetBrains Mono dá cara de instrumento aos números, rótulos técnicos e valores da curva.
 
 ### Hierarchy
-- **Body** (400, escala Tailwind, texto em Branco Gelo ou Ardósia): explicações e descrições para leigos.
-- **Label** (mono, pequeno, caixa-alta quando técnico): valores, unidades, rótulos de região e de eixo.
+- **Título da substância** (700, 18px no celular e 20px a partir de `sm`): o nome da substância ou comportamento em Detalhes.
+- **Marca e títulos de seção** (700, 14px, mono; a marca com 0,16em de espaçamento): CORTEXPLORA e os títulos de painel.
+- **Body** (400, 14px com entrelinha 1,65 em Detalhes, texto em Branco Gelo ou Ardósia): explicações e descrições para leigos.
+- **Label** (mono, 12px de piso, caixa-alta quando técnico): valores, unidades, rótulos de região e de eixo. Nada fica abaixo de 12px.
 
 ### Named Rules
 **The Numbers Are Mono Rule.** Todo valor numérico da simulação usa a fonte mono.
@@ -135,7 +137,7 @@ Cápsulas e círculos. Rótulos, abas e trilhos usam cantos totalmente arredonda
 - **Estilo:** ciano sólido (`bg-cyan-500`) com texto escuro `slate-950`, borda ciano clara e hover em ciano mais claro. É o único botão preenchido da interface ("SIMULAR EVENTO").
 
 ### Cartão de apresentação e fecho
-- **Estilo:** painel de vidro centralizado sobre a cena, com passo, título, texto curto e dois botões (secundário neutro, primário ciano). Aparece na primeira visita e ao fim de uma simulação disparada pelo usuário, com resumo da curva e a linha de apoio (CVV 188).
+- **Estilo:** folha de vidro posicionada logo acima do rodapé de controles, com botão de fechar de 44px, com passo, título, texto curto e dois botões (secundário neutro, primário ciano). Aparece na primeira visita e ao fim de uma simulação disparada pelo usuário, com resumo da curva e a linha de apoio (CVV 188).
 
 ### Alerta de crash
 - Borda e brilho rosa pulsando (inset e externo), apenas no estado de fissura.

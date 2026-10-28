@@ -51,11 +51,11 @@ No rodapé da tela, você tem o controle total do tempo da simulação:
 ---
 
 ## Passo 5: Explore as Partes do Cérebro e os Atalhos
-*   **Mapa das Partes do Cérebro:** no lado esquerdo, clique em qualquer uma das 10 regiões para a câmera viajar até ela e mostrar onde fica, para que serve e como a substância atual a afeta.
+*   **Partes do cérebro:** no lado esquerdo, clique em qualquer uma das 10 regiões para a câmera viajar até ela e mostrar onde fica, para que serve e como a substância atual a afeta.
 *   **Rótulos:** o botão **Rótulos** (tecla L) mostra ou esconde as etiquetas com linhas-guia ao redor do cérebro.
 *   **Velocidade:** no rodapé, escolha a velocidade da simulação: 0.5x, 1x, 2x ou 4x.
 *   **Atalhos de teclado:** Espaço (disparar evento), P (pausar/reproduzir), C (comparar), L (rótulos) e 1 a 6 (trocar de substância).
-*   **No celular:** os painéis começam recolhidos para o cérebro aparecer. Toque em **Mapa das Partes do Cérebro** ou em **Mostrar Região & Mapa de Picos** para abri-los.
+*   **No celular:** os painéis começam recolhidos para o cérebro aparecer. Toque em **Partes do cérebro** ou em **Região e picos** para abri-los.
 
 ---
 
