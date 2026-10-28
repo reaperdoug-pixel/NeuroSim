@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-28T00:00:00Z",
+  "title": "Design System: Cortexplora",
+  "extensions": {
+    "colorMeta": {
+      "deep-space": {"role": "neutral", "displayName": "Espaço Profundo", "canonical": "#0A0E17", "tonalRamp": ["#05070c","#0A0E17","#131c31","#1e293b","#334155","#64748b","#94a3b8","#e2e8f0"]},
+      "signal-cyan": {"role": "primary", "displayName": "Ciano de Sinal", "canonical": "#38BDF8", "tonalRamp": ["#0c4a6e","#075985","#0369a1","#0284c7","#0ea5e9","#38bdf8","#7dd3fc","#e0f2fe"]},
+      "crash-rose": {"role": "secondary", "displayName": "Rosa de Crash", "canonical": "#F43F5E", "tonalRamp": ["#4c0519","#881337","#9f1239","#be123c","#e11d48","#f43f5e","#fb7185","#ffe4e6"]}
+    },
+    "typographyMeta": {
+      "body": {"displayName": "Body", "purpose": "Texto didático em Inter."},
+      "label-mono": {"displayName": "Label Mono", "purpose": "Valores numéricos e rótulos técnicos."}
+    },
+    "shadows": [
+      {"name": "hud-panel", "value": "0 12px 32px -4px rgba(0,0,0,0.65), inset 0 1px 0 0 rgba(255,255,255,0.07)", "purpose": "Painéis flutuantes."},
+      {"name": "glow-active", "value": "0 0 18px rgba(56,189,248,0.35)", "purpose": "Cápsula selecionada."}
+    ],
+    "motion": [
+      {"name": "ease-pill", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Hover das cápsulas anatômicas."},
+      {"name": "crash-pulse", "value": "1.4s infinite ease-in-out", "purpose": "Alerta de fissura/crash."}
+    ]
+  },
+  "components": [
+    {"name": "Painel HUD", "kind": "card", "refersTo": "hud-panel", "description": "Vidro escuro flutuante sobre a cena.",
+     "html": "<div class=\"ds-hud\">Curva dopaminérgica</div>",
+     "css": ".ds-hud{background:rgba(11,17,30,.8);backdrop-filter:blur(14px);border:1px solid rgba(148,163,184,.15);box-shadow:0 12px 32px -4px rgba(0,0,0,.65),inset 0 1px 0 0 rgba(255,255,255,.07);color:#F8FAFC;padding:16px;border-radius:12px;font-family:Inter,sans-serif}"},
+    {"name": "Cápsula anatômica", "kind": "chip", "refersTo": "anat-pill", "description": "Rótulo de região, ativa com glow ciano.",
+     "html": "<button class=\"ds-pill\">Amígdala</button>",
+     "css": ".ds-pill{background:rgba(10,15,28,.82);color:#F8FAFC;border:1px solid rgba(148,163,184,.22);border-radius:999px;padding:6px 14px;font-family:Inter,sans-serif;cursor:pointer;transition:all .2s cubic-bezier(.16,1,.3,1)}.ds-pill:hover{transform:scale(1.05);border-color:rgba(56,189,248,.65);background:rgba(15,23,42,.95)}.ds-pill:focus-visible{outline:2px solid #38BDF8;outline-offset:2px}"},
+    {"name": "Cápsula ativa", "kind": "chip", "refersTo": "anat-pill-active", "description": "Estado selecionado.",
+     "html": "<button class=\"ds-pill-on\">VTA</button>",
+     "css": ".ds-pill-on{background:rgba(14,116,144,.28);color:#67E8F9;border:1px solid #38BDF8;border-radius:999px;padding:6px 14px;box-shadow:0 0 18px rgba(56,189,248,.35);font-family:Inter,sans-serif}"},
+    {"name": "Slider", "kind": "input", "refersTo": "slider-thumb", "description": "Trilho em pílula com thumb ciano.",
+     "html": "<div class=\"ds-track\"><span class=\"ds-thumb\"></span></div>",
+     "css": ".ds-track{position:relative;width:200px;height:6px;border-radius:999px;background:rgba(30,41,59,.9);border:1px solid rgba(148,163,184,.2)}.ds-thumb{position:absolute;left:40%;top:-6px;width:16px;height:16px;border-radius:50%;background:#38BDF8;border:2px solid #fff;box-shadow:0 0 12px rgba(56,189,248,.9);transition:transform .15s}.ds-thumb:hover{transform:scale(1.18)}"}
+  ],
+  "narrative": {
+    "northStar": "O Observatório do Cérebro",
+    "overview": "O cérebro é um corpo celeste em um céu escuro, e a interface é o equipamento de observação ao redor dele. Vidro fosco sobre a cena, brilho como resposta de estado, números em mono.",
+    "keyCharacteristics": ["Escuro por natureza", "Vidro fosco com blur", "Ciano para foco, rosa para crash", "Cápsulas arredondadas"],
+    "rules": [
+      {"name": "The One Signal Rule", "body": "Ciano é o único acento da interface. Cores de substância vivem só dentro dos dados.", "section": "colors"},
+      {"name": "The Crash Is Rose Rule", "body": "Rosa pulsante aparece apenas quando a dopamina está em fissura/crash.", "section": "colors"},
+      {"name": "The Numbers Are Mono Rule", "body": "Todo valor numérico da simulação usa a fonte mono.", "section": "typography"},
+      {"name": "The Glow Is State Rule", "body": "Brilho só aparece em foco, seleção ou alerta, nunca como decoração em repouso.", "section": "elevation"}
+    ],
+    "dos": ["Do usar vidro translúcido com blur sobre a cena 3D.", "Do reservar ciano para foco e seleção e rosa para crash.", "Do usar JetBrains Mono em todo valor numérico.", "Do manter transições curtas (0.15–0.2s) e brilho como resposta de estado."],
+    "donts": ["Don't usar painéis opacos que escondam o cérebro.", "Don't colorir a interface com as cores das substâncias.", "Don't usar brilho como decoração em repouso.", "Don't usar fundos claros: a cena depende do céu noturno."]
+  }
+}
