@@ -173,31 +173,57 @@
         }
         /* Toque: alvos maiores só em ponteiro grosso, sem inflar o layout de mouse */
         @media (pointer: coarse) {
+            .kbd-hint {
+                display: none;
+            }
             button, select, summary {
-                min-height: 40px;
+                min-height: 44px;
+            }
+            .speed-btn, #play-pause-btn {
+                min-width: 44px;
             }
             /* Só em botões de ícone: min-width em botão com texto deixaria o chip encolher e o texto vazar */
             button:has(> svg:only-child), button:not(:has(*)):where([title], [aria-label]) {
-                min-width: 40px;
+                min-width: 44px;
             }
             input[type="range"].neuro-slider {
-                height: 32px;
-                padding: 12px 0;
+                height: 44px;
+                padding: 18px 0;
                 background-clip: content-box;
             }
         }
-        /* Piso tipográfico: rótulos de 8 a 11px sobem um degrau. O seletor mais específico
+        /* Celular: linha do tempo e velocidade ficam recolhidas até o botão do rodapé ser tocado */
+        @media (max-width: 639px) {
+            #footer-panel.footer-collapsed .footer-extra {
+                display: none;
+            }
+        }
+        #footer-toggle-btn[aria-expanded="true"] #footer-toggle-icon {
+            transform: rotate(180deg);
+        }
+        /* Celular: marca e opções na primeira linha, navegação de páginas na segunda */
+        @media (max-width: 639px) {
+            header > div:first-child > nav {
+                order: 3;
+                width: 100%;
+            }
+            header > div:first-child > nav button {
+                flex: 1;
+                justify-content: center;
+            }
+            header > div:first-child > div:first-child > div:first-child,
+            html body header h1 + span {
+                display: none !important;
+            }
+        }
+        /* Piso tipográfico: rótulos de 8 a 11px sobem para 12px. O seletor mais específico
            vence o CSS gerado em tempo de execução pelo Tailwind. */
         html body .text-\[8px\],
-        html body .text-\[9px\] {
-            font-size: 10.5px;
-            line-height: 1.3;
-        }
-        html body .text-\[10px\] {
-            font-size: 11.5px;
-        }
+        html body .text-\[9px\],
+        html body .text-\[10px\],
         html body .text-\[11px\] {
             font-size: 12px;
+            line-height: 1.3;
         }
         /* Números da simulação alinhados em colunas */
         .font-mono-tech {
@@ -234,6 +260,21 @@
 </head>
 <body class="relative select-none">
 
+    <a href="#simulate-btn" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-2 focus:rounded-lg focus:bg-slate-900 focus:text-cyan-300 focus:border focus:border-cyan-500/60 text-xs font-semibold">Ir para os controles da simulação</a>
+    <div id="sr-status" role="status" aria-live="polite" class="sr-only"></div>
+
+    <!-- Cartão de apresentação inicial e de fecho da simulação -->
+    <div id="coach-card" role="dialog" aria-labelledby="coach-title" aria-describedby="coach-body" class="hidden fixed z-40 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-24px)] max-w-sm hud-panel rounded-2xl p-4 pointer-events-auto">
+        <div id="coach-step" class="text-[11px] font-mono-tech uppercase tracking-wider text-cyan-300"></div>
+        <h2 id="coach-title" class="mt-1 text-base font-bold text-white"></h2>
+        <p id="coach-body" class="mt-2 text-sm text-slate-200 leading-relaxed"></p>
+        <p id="coach-support" class="hidden mt-2 text-xs text-slate-400 leading-snug">Precisa de apoio? Ligue <a href="tel:188" class="text-cyan-300 underline underline-offset-2">188</a> (CVV, gratuito, 24 horas).</p>
+        <div class="mt-3 flex flex-wrap justify-end gap-2">
+            <button id="coach-secondary" type="button" onclick="coachSecondary()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-300 border border-slate-700 transition"></button>
+            <button id="coach-primary" type="button" onclick="coachPrimary()" class="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-slate-950 border border-cyan-300/60 transition"></button>
+        </div>
+    </div>
+
     <!-- 3D WebGL Canvas Container -->
     <div id="canvas-container" role="img" aria-label="Modelo 3D interativo do cérebro com as regiões e vias dopaminérgicas. Arraste para girar e use a roda para aproximar."></div>
     <div class="holo-grid"></div>
@@ -252,7 +293,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 hud-panel rounded-xl px-2.5 py-1.5">
                 <!-- Brand & Title -->
                 <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/20 to-fuchsia-500/20 border border-cyan-400/40 flex items-center justify-center shadow-inner shrink-0">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 border border-cyan-400/40 flex items-center justify-center shadow-inner shrink-0">
                         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping absolute"></span>
                         <span class="w-2 h-2 rounded-full bg-cyan-400 relative"></span>
                     </div>
@@ -260,7 +301,7 @@
                         <div class="flex items-center gap-2">
                             <h1 class="text-xs sm:text-sm font-bold tracking-wider text-white font-mono-tech whitespace-nowrap">CORTEXPLORA</h1>
                             <!-- Trilha ativa: Dopamapa (substâncias e comportamentos de risco). Ver docs/TRILHAS.md -->
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-mono-tech uppercase tracking-wider bg-fuchsia-500/10 text-fuchsia-300 border border-fuchsia-500/30 whitespace-nowrap" title="Trilha Dopamapa: substâncias e comportamentos de risco">Dopamapa</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-mono-tech uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 whitespace-nowrap" title="Trilha Dopamapa: substâncias e comportamentos de risco">Dopamapa</span>
                         </div>
                     </div>
                 </div>
@@ -284,14 +325,14 @@
                     <button id="labels-toggle-btn" onclick="toggleAnatomicalLabels()" aria-pressed="true" class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-cyan-500/40 bg-cyan-500/15 text-[11px] font-semibold text-cyan-200 transition" title="Atalho: Tecla L">
                         <span id="labels-dot" class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
                         <span>Rótulos</span>
-                        <span class="text-[9px] font-mono-tech text-cyan-400/80">[L]</span>
+                        <span class="kbd-hint text-[9px] font-mono-tech text-cyan-400/80">[L]</span>
                     </button>
 
                     <!-- Comparative Mode Switch -->
                     <button id="compare-toggle-btn" onclick="toggleCompareMode()" aria-pressed="false" class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-700/80 bg-slate-900/90 hover:bg-slate-800/90 text-[11px] font-medium text-slate-200 transition" title="Atalho: Tecla C">
                         <span id="compare-dot" class="w-2 h-2 rounded-full bg-slate-500 transition"></span>
                         <span>Comparar</span>
-                        <span class="text-[9px] font-mono-tech text-slate-400">[C]</span>
+                        <span class="kbd-hint text-[9px] font-mono-tech text-slate-400">[C]</span>
                     </button>
                 </div>
             </div>
@@ -432,7 +473,7 @@
 
                         <!-- Quick Peak & Crash Action Buttons -->
                         <div class="flex items-center gap-1">
-                            <button onclick="jumpToPeak()" class="flex-1 py-1 px-1.5 rounded-lg bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 text-[10px] font-semibold transition">
+                            <button onclick="jumpToPeak()" class="flex-1 py-1 px-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-[10px] font-semibold transition">
                                 ⚡ Ir ao Pico
                             </button>
                             <button onclick="jumpToCrash()" class="flex-1 py-1 px-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-[10px] font-semibold transition">
@@ -477,7 +518,7 @@
                     <div class="flex items-center gap-3">
                         <div class="text-right font-mono-tech">
                             <span id="live-dopamine-number" class="text-lg sm:text-xl font-bold text-pink-400">100%</span>
-                            <span class="text-[9px] text-slate-400 block uppercase">% DO BASAL</span>
+                            <span class="text-[9px] text-slate-400 block uppercase" title="Basal é o nível normal de dopamina em repouso, que vale 100%">% DO BASAL</span>
                         </div>
                         <button onclick="switchAppPage('3d')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-300 border border-cyan-500/30 transition">
                             🧠 Ver Cérebro 3D
@@ -508,7 +549,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button onclick="jumpToPeak()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 text-xs font-semibold transition">
+                        <button onclick="jumpToPeak()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition">
                             <span>⚡ Ir ao Pico</span>
                         </button>
                         <button onclick="jumpToCrash()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-xs font-semibold transition">
@@ -634,6 +675,17 @@
                     </div>
                 </div>
 
+                <!-- Apoio e aviso didático -->
+                <div class="bg-slate-950/75 rounded-xl p-3.5 border border-slate-800/90">
+                    <h3 class="text-xs font-mono-tech uppercase tracking-wider text-cyan-300 font-bold">Quer conversar com alguém?</h3>
+                    <p class="mt-1 text-xs sm:text-sm text-slate-200 leading-relaxed">
+                        Caso você ou alguém próximo se identifique com o conteúdo desta página, é possível buscar apoio. O Centro de Valorização da Vida (CVV) oferece escuta gratuita, 24 horas por dia, pelo telefone <a href="tel:188" class="text-cyan-300 underline underline-offset-2">188</a>. Para acompanhamento relacionado ao uso de álcool e outras drogas, o serviço indicado é o Centro de Atenção Psicossocial Álcool e Drogas (CAPS AD), acessível pela Unidade Básica de Saúde (UBS) do seu município. Em situação de emergência, ligue <a href="tel:192" class="text-cyan-300 underline underline-offset-2">192</a> (SAMU).
+                    </p>
+                    <p class="mt-2 text-[11px] text-slate-400 leading-snug">
+                        O Cortexplora é um material educativo que simplifica processos neurobiológicos reais para fins didáticos. Não substitui avaliação, diagnóstico, tratamento ou acompanhamento por profissionais de saúde.
+                    </p>
+                </div>
+
                 <!-- Dynamic Neurochemical Phase Status Box -->
                 <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800/90 flex items-center justify-between">
                     <div class="flex items-center gap-2.5">
@@ -653,18 +705,18 @@
 
         <!-- BOTTOM BAR: Event Trigger + Timeline Scrubber + Speed Controls + Shortcuts Bar -->
         <footer class="w-full shrink-0 pointer-events-auto flex flex-col gap-0.5">
-            <div class="hud-panel rounded-xl p-2 sm:px-3.5 sm:py-2 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 sm:gap-3">
+            <div id="footer-panel" class="footer-collapsed hud-panel rounded-xl p-2 sm:px-3.5 sm:py-2 flex flex-col lg:flex-row items-stretch lg:items-center gap-2 sm:gap-3">
                 
                 <!-- Trigger Button ("Simular Evento"), Play/Pause & Reset -->
                 <div class="flex items-center gap-2 shrink-0">
-                    <button id="simulate-btn" onclick="triggerSimulationEvent()" class="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-white shadow-lg transition-all duration-200 transform active:scale-95 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:brightness-110 border border-pink-400/50 shadow-pink-600/30">
+                    <button id="simulate-btn" onclick="triggerSimulationEvent()" title="Simula o momento do consumo ou da aposta e mostra, em 60 segundos, a resposta do cérebro [Tecla Espaço]" class="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-xs text-slate-950 shadow-lg transition-all duration-200 transform active:scale-95 bg-cyan-500 hover:bg-cyan-400 border border-cyan-300/60 shadow-cyan-500/20">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                         <span>SIMULAR EVENTO</span>
                     </button>
 
-                    <button id="play-pause-btn" onclick="togglePlayPause()" title="Pausar / Reproduzir [Tecla P]" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 text-xs font-semibold">
+                    <button id="play-pause-btn" onclick="togglePlayPause()" aria-label="Pausar ou retomar a simulação" title="Pausar / Reproduzir [Tecla P]" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 text-xs font-semibold">
                         <svg id="icon-pause" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6" />
                         </svg>
@@ -674,15 +726,18 @@
                         <span id="play-pause-label" class="hidden sm:inline">Pausar</span>
                     </button>
 
-                    <button onclick="resetTimeline()" title="Reiniciar do 0s" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition">
+                    <button onclick="resetTimeline()" aria-label="Reiniciar a simulação do início" title="Reiniciar do 0s" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
+                    <button id="footer-toggle-btn" onclick="toggleFooterControls()" aria-expanded="false" aria-controls="footer-extra-timeline footer-extra-speed" aria-label="Mostrar linha do tempo e velocidade" title="Linha do tempo e velocidade" class="sm:hidden px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition">
+                        <svg id="footer-toggle-icon" class="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                    </button>
                 </div>
 
                 <!-- Timeline Slider & Phase Markers -->
-                <div class="flex-1 flex flex-col gap-1">
+                <div id="footer-extra-timeline" class="footer-extra flex-1 flex flex-col gap-1">
                     <div class="flex items-center justify-between text-[10px] font-mono-tech">
                         <div class="flex items-center gap-2 text-slate-400">
                             <span class="text-cyan-300 font-semibold">LINHA DO TEMPO — ABSORÇÃO · PICO · QUEDA</span>
@@ -708,7 +763,7 @@
                         />
                     </div>
 
-                    <div class="flex justify-between text-[9px] font-mono-tech text-slate-400 px-0.5">
+                    <div class="hidden sm:flex justify-between text-[9px] font-mono-tech text-slate-400 px-0.5">
                         <span>0s<span class="hidden sm:inline"> • Basal / Gatilho</span></span>
                         <span>12s<span class="hidden sm:inline"> • Absorção & Pico</span></span>
                         <span>30s<span class="hidden sm:inline"> • Depleção</span></span>
@@ -718,7 +773,7 @@
                 </div>
 
                 <!-- Playback Speed Selector ("Velocidade de Leitura": 0.5x, 1x, 2x, 4x) -->
-                <div class="flex items-center justify-between lg:justify-end gap-1.5 shrink-0 border-t lg:border-t-0 lg:border-l border-slate-800 pt-1.5 lg:pt-0 lg:pl-3">
+                <div id="footer-extra-speed" class="footer-extra flex items-center justify-between lg:justify-end gap-1.5 shrink-0 border-t lg:border-t-0 lg:border-l border-slate-800 pt-1.5 lg:pt-0 lg:pl-3">
                     <span class="text-[10px] font-mono-tech text-slate-400 uppercase mr-1">Velocidade:</span>
                     <div class="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 font-mono-tech text-[11px]">
                         <button onclick="setPlaybackSpeed(0.5)" id="speed-0.5" class="speed-btn px-2 py-1 rounded-lg text-slate-400 hover:text-white transition">0.5x</button>
@@ -728,6 +783,15 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Aviso didático permanente e caminho de apoio -->
+            <p class="hidden sm:block px-3 py-1 rounded-lg bg-slate-950/90 border border-slate-800/80 text-[10px] text-slate-300 leading-snug">
+                Material de caráter exclusivamente educativo, sem finalidade de diagnóstico ou aconselhamento. Havendo necessidade de apoio, o Centro de Valorização da Vida atende gratuitamente, 24 horas, pelo <a href="tel:188" class="text-cyan-300 underline underline-offset-2">188</a>. Também é possível buscar um CAPS AD ou uma Unidade Básica de Saúde.
+            </p>
+            <details class="sm:hidden rounded-lg bg-slate-950/90 border border-slate-800/80 text-[10px] text-slate-300 leading-snug">
+                <summary class="px-3 py-1 cursor-pointer">Material educativo, sem finalidade de diagnóstico. Precisa de apoio? Ligue <a href="tel:188" class="text-cyan-300 underline underline-offset-2">188</a>. <span class="text-cyan-300 underline underline-offset-2">Saiba mais</span></summary>
+                <p class="px-3 pb-2">Material de caráter exclusivamente educativo, sem finalidade de diagnóstico ou aconselhamento. Havendo necessidade de apoio, o Centro de Valorização da Vida atende gratuitamente, 24 horas, pelo <a href="tel:188" class="text-cyan-300 underline underline-offset-2">188</a>. Também é possível buscar um CAPS AD ou uma Unidade Básica de Saúde.</p>
+            </details>
 
             <!-- Keyboard Shortcuts Status Bar (Like Reference Image) -->
             <div class="hidden sm:flex items-center justify-between px-3 py-0.5 text-[10px] font-mono-tech text-slate-400">
@@ -936,8 +1000,8 @@
                 name: 'Apostas Eletrônicas (Bets)',
                 shortName: 'Apostas (Bets)',
                 category: 'Hiperativação / Pico Rápido',
-                colorHex: '#FF0055',
-                secondaryGlowHex: '#FF5599',
+                colorHex: '#F59E0B',
+                secondaryGlowHex: '#FCD34D',
                 tinyName: 'Bets',
                 peakTag: '2º pulso aos 15s',
                 description: 'A incerteza da recompensa intermitente e o efeito de "quase-ganho" disparam pulsos agudos de dopamina do VTA ao Núcleo Accumbens. A queda abrupta abaixo do nível basal ativa a Amígdala (ansiedade) e gera urgência para continuar apostando.',
@@ -963,7 +1027,7 @@
                 name: 'Crack',
                 shortName: 'Crack',
                 category: 'Hiperativação Extrema',
-                colorHex: '#FF3B30', // Vermelho intenso: distinto do vermelho-magenta das Bets (#FF0055)
+                colorHex: '#FF3B30', // Vermelho intenso: distinto do âmbar das Bets (#F59E0B)
                 secondaryGlowHex: '#FF1E56',
                 tinyName: 'Crack',
                 peakTag: 'Agulha Explosiva',
@@ -1251,9 +1315,9 @@
                 const renderScene = new THREE.RenderPass(scene, camera);
                 bloomPass = new THREE.UnrealBloomPass(
                     new THREE.Vector2(width, height),
-                    1.15,
-                    0.55,
-                    0.22
+                    0.7,
+                    0.5,
+                    0.3
                 );
                 composer = new THREE.EffectComposer(renderer);
                 composer.addPass(renderScene);
@@ -2126,7 +2190,15 @@
             if (state.isPlaying && !state.isScrubbing) {
                 state.simTime += dt;
                 if (state.simTime > state.simDuration) {
-                    state.simTime = 0;
+                    if (state.runActive) {
+                        state.simTime = state.simDuration;
+                        state.isPlaying = false;
+                        state.runActive = false;
+                        updatePlayPauseIcons();
+                        showSimSummary();
+                    } else {
+                        state.simTime = 0;
+                    }
                 }
                 const slider = document.getElementById('timeline-slider');
                 if (slider) {
@@ -2167,7 +2239,7 @@
             const nacScale = 0.85 + Math.max(-0.25, excitation * 0.65) + pulseWave * (0.12 + Math.max(0, excitation * 0.25));
             nacLeftMesh.scale.setScalar(nacScale);
             nacRightMesh.scale.setScalar(nacScale);
-            nacLeftMesh.material.color.copy(primaryColor).lerp(new THREE.Color(0xffffff), Math.max(0, excitation * 0.45 * pulseWave));
+            nacLeftMesh.material.color.copy(primaryColor).lerp(new THREE.Color(0xffffff), Math.max(0, excitation * 0.2 * pulseWave));
             nacRightMesh.material.color.copy(nacLeftMesh.material.color);
 
             const haloScale = 2.1 + Math.max(-0.6, excitation * 2.6) + pulseWave * 0.55;
@@ -2190,8 +2262,8 @@
             centralGlowLight.intensity = isCrash ? 0.8 : (1.5 + Math.max(0, excitation * 2.4));
 
             if (bloomPass) {
-                const maxBloom = state.primaryId === 'mdma' ? 1.18 : 1.45;
-                bloomPass.strength = isCrash ? 0.75 : Math.min(maxBloom, 0.98 + Math.max(0, excitation * 0.48));
+                const maxBloom = state.primaryId === 'mdma' ? 0.8 : 0.95;
+                bloomPass.strength = isCrash ? 0.6 : Math.min(maxBloom, 0.55 + Math.max(0, excitation * 0.3));
             }
 
             // 2. Prefrontal Cortex (PFC)
@@ -2245,7 +2317,7 @@
             const fastPosAttr = fastParticleSystem.geometry.attributes.position;
             const fastMeta = fastParticleSystem.userData.meta;
 
-            fastParticleSystem.material.color.copy(primaryColor).lerp(new THREE.Color(0xffffff), Math.max(0, excitation * 0.35));
+            fastParticleSystem.material.color.copy(primaryColor).lerp(new THREE.Color(0xffffff), Math.max(0, excitation * 0.15));
             fastParticleSystem.material.size = isCrash ? 0.15 : (0.20 + Math.max(0, excitation * 0.14));
             fastParticleSystem.material.opacity = isCrash ? 0.42 : 0.95;
 
@@ -2423,6 +2495,10 @@
                 phaseDotEl.style.backgroundColor = '#10B981';
             }
             phaseNameEl.textContent = currentPhaseText;
+            if (state.announcedPhase !== currentPhaseText) {
+                state.announcedPhase = currentPhaseText;
+                document.getElementById('sr-status').textContent = `${sub.shortName || sub.name}: fase ${currentPhaseText}, dopamina em ${dopRounded}% do nível basal.`;
+            }
 
             updateCrashIndicator(getDopamineStatus(dopamineLevel), dopRounded);
 
@@ -3014,6 +3090,8 @@
         }
 
         function triggerSimulationEvent() {
+            coachClose();
+            state.runActive = true;
             state.simTime = 1.8;
             state.isPlaying = true;
             updatePlayPauseIcons();
@@ -3024,6 +3102,7 @@
         }
 
         function resetTimeline() {
+            state.runActive = false;
             state.simTime = 0.0;
             const slider = document.getElementById('timeline-slider');
             if (slider) slider.value = 0;
@@ -3065,6 +3144,139 @@
             window.addEventListener('pointerup', stopScrubbing);
             window.addEventListener('pointercancel', stopScrubbing);
             window.addEventListener('blur', stopScrubbing);
+        }
+
+        function toggleFooterControls() {
+            const panel = document.getElementById('footer-panel');
+            const btn = document.getElementById('footer-toggle-btn');
+            const collapsed = panel.classList.toggle('footer-collapsed');
+            btn.setAttribute('aria-expanded', String(!collapsed));
+            btn.setAttribute('aria-label', collapsed ? 'Mostrar linha do tempo e velocidade' : 'Ocultar linha do tempo e velocidade');
+        }
+
+        // ---- Apresentação inicial (3 passos) e fecho da simulação ----
+        const TOUR_KEY = 'cortexplora-tour-v1';
+        const TOUR_STEPS = [
+            {
+                title: 'Como o cérebro reage, sem julgamento',
+                body: 'O Cortexplora mostra, com base em ciência, como substâncias e apostas atuam no sistema de recompensa. Leva cerca de um minuto. Primeiro, escolha uma substância ou comportamento nas abas do topo.'
+            },
+            {
+                title: 'Dispare a simulação',
+                body: 'Toque em "Simular evento". A dopamina sobe, atinge um pico e depois cai. Você pode pausar e arrastar a linha do tempo quando quiser.'
+            },
+            {
+                title: 'Leia a curva e a ciência',
+                body: 'A aba Gráfico mostra a curva e o pico de cada substância. A aba Detalhes explica o mecanismo e as regiões envolvidas.'
+            }
+        ];
+        let coachMode = null;
+        let coachStep = 0;
+        let coachReturnFocus = null;
+
+        function coachOpen() {
+            const card = document.getElementById('coach-card');
+            coachReturnFocus = document.activeElement;
+            card.classList.remove('hidden');
+            document.getElementById('coach-primary').focus();
+        }
+
+        function coachClose() {
+            const card = document.getElementById('coach-card');
+            if (!card || card.classList.contains('hidden')) return;
+            card.classList.add('hidden');
+            coachMode = null;
+            if (coachReturnFocus && coachReturnFocus.focus && document.contains(coachReturnFocus)) coachReturnFocus.focus();
+        }
+
+        function renderCoach() {
+            const prim = document.getElementById('coach-primary');
+            const sec = document.getElementById('coach-secondary');
+            const support = document.getElementById('coach-support');
+            if (coachMode === 'tour') {
+                const s = TOUR_STEPS[coachStep];
+                document.getElementById('coach-step').textContent = `Passo ${coachStep + 1} de ${TOUR_STEPS.length}`;
+                document.getElementById('coach-title').textContent = s.title;
+                document.getElementById('coach-body').textContent = s.body;
+                prim.textContent = coachStep === TOUR_STEPS.length - 1 ? 'Começar' : 'Próximo';
+                sec.textContent = 'Pular';
+                support.classList.add('hidden');
+            }
+        }
+
+        function startTour() {
+            coachMode = 'tour';
+            coachStep = 0;
+            renderCoach();
+            coachOpen();
+        }
+
+        function maybeStartTour() {
+            let seen = false;
+            try { seen = localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { /* sem armazenamento: apresenta de novo */ }
+            if (!seen) setTimeout(startTour, 700);
+        }
+
+        function markTourSeen() {
+            try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) { /* ignora */ }
+        }
+
+        function showSimSummary() {
+            const sub = SUBSTANCES[state.primaryId];
+            const { peakVal, peakT, crashVal, crashT } = sub.extremes;
+            const name = sub.shortName || sub.name;
+            const peak = Math.round(peakVal);
+            const crash = Math.round(crashVal);
+            const peakS = (peakT * state.simDuration).toFixed(0);
+            const crashS = (crashT * state.simDuration).toFixed(0);
+            coachMode = 'summary';
+            document.getElementById('coach-step').textContent = 'Simulação concluída';
+            document.getElementById('coach-title').textContent = name;
+            const dropText = crash < 100
+                ? ` e depois caiu para cerca de ${crash}% aos ${crashS}s, abaixo do nível normal. Essa queda é a fase associada à fissura, a vontade de repetir.`
+                : ' e depois voltou gradualmente ao nível normal.';
+            document.getElementById('coach-body').textContent = `A dopamina chegou a cerca de ${peak}% do nível basal aos ${peakS}s${dropText}`;
+            document.getElementById('coach-primary').textContent = 'Ver os detalhes';
+            document.getElementById('coach-secondary').textContent = 'Repetir';
+            document.getElementById('coach-support').classList.remove('hidden');
+            document.getElementById('sr-status').textContent = `Simulação concluída. ${name}: pico de ${peak}% do basal aos ${peakS} segundos.`;
+            coachOpen();
+        }
+
+        function coachPrimary() {
+            if (coachMode === 'tour') {
+                if (coachStep < TOUR_STEPS.length - 1) {
+                    coachStep += 1;
+                    renderCoach();
+                    document.getElementById('coach-primary').focus();
+                } else {
+                    markTourSeen();
+                    coachReturnFocus = document.getElementById('simulate-btn');
+                    coachClose();
+                }
+            } else if (coachMode === 'summary') {
+                coachReturnFocus = null;
+                coachClose();
+                switchAppPage('details');
+            }
+        }
+
+        function coachSecondary() {
+            if (coachMode === 'tour') {
+                markTourSeen();
+                coachClose();
+            } else if (coachMode === 'summary') {
+                triggerSimulationEvent();
+            }
+        }
+
+        function initCoachKeys() {
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && coachMode) {
+                    if (coachMode === 'tour') markTourSeen();
+                    coachClose();
+                }
+            });
         }
 
         function jumpToNormalizedTime(t) {
@@ -3129,6 +3341,7 @@
                 const isTextField = (target.tagName === 'INPUT' && target.type !== 'range') || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
                 if (isTextField) return;
                 const k = e.key.toLowerCase();
+                if (e.code === 'Space' && target.closest && target.closest('button, a, summary')) return;
                 if (e.code === 'Space') {
                     e.preventDefault();
                     triggerSimulationEvent();
@@ -3164,6 +3377,8 @@
             initChartClickScrubbing();
             initTimelineScrubbing();
             initKeyboardShortcuts();
+            initCoachKeys();
+            maybeStartTour();
             try {
                 initThreeScene();
             } catch (err) {
