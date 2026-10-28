@@ -76,7 +76,7 @@ Paleta noturna fria com um único acento ciano e um alerta rosa reservado.
 
 No código, essas cores são variáveis CSS no `:root` do `index.html` (`--bg-deep`, `--bg-deep-glow`, `--ice-white`, `--signal-cyan`, `--crash-rose-soft`, e os canais `--signal-cyan-rgb`, `--crash-rose-rgb`, `--slate-line-rgb`, `--glass-rgb` para transparências). O JavaScript (canvas dos gráficos e a névoa do Three.js) lê esses mesmos tokens pelo objeto `UI_COLORS`, sem repetir valores.
 
-Cada substância e região tem sua própria cor de dado (amarelo, ciano, rosa, turquesa, índigo, violeta etc., definidas em `colorHex` no código). Elas colorem curvas e pontos, nunca a interface.
+Cada substância e região tem sua própria cor de dado (âmbar nas Apostas, vermelho no crack, rosa na cocaína, azul no álcool, turquesa na maconha, violeta no MDMA, definidas em `colorHex` no código). Elas colorem curvas e pontos, nunca a interface.
 
 ### Named Rules
 **The One Signal Rule.** Ciano é o único acento da interface. Cores de substância vivem só dentro dos dados.
@@ -130,6 +130,12 @@ Cápsulas e círculos. Rótulos, abas e trilhos usam cantos totalmente arredonda
 ### Slider
 - **Trilho:** 6px, pílula, fundo azul-ardósia, borda fina.
 - **Thumb:** círculo de 16px ciano com anel branco de 2px e glow; hover escala 1.18.
+
+### Botão de ação principal
+- **Estilo:** ciano sólido (`bg-cyan-500`) com texto escuro `slate-950`, borda ciano clara e hover em ciano mais claro. É o único botão preenchido da interface ("SIMULAR EVENTO").
+
+### Cartão de apresentação e fecho
+- **Estilo:** painel de vidro centralizado sobre a cena, com passo, título, texto curto e dois botões (secundário neutro, primário ciano). Aparece na primeira visita e ao fim de uma simulação disparada pelo usuário, com resumo da curva e a linha de apoio (CVV 188).
 
 ### Alerta de crash
 - Borda e brilho rosa pulsando (inset e externo), apenas no estado de fissura.

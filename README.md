@@ -49,6 +49,8 @@ A versão 2.0, atualmente publicada, acrescenta em relação à versão 1:
 - Indicador de dopamina com quatro estados (acima do basal, no basal, abaixo do basal e fissura).
 - Controle de velocidade da simulação e atalhos de teclado.
 - Funcionamento sem WebGL (o gráfico, os picos e os detalhes continuam disponíveis) e layout adaptado a telas pequenas.
+- Aviso didático permanente, caminho de apoio (CVV 188, CAPS AD e SAMU 192) e apresentação inicial em três passos, com cartão de resumo ao fim de cada simulação.
+- Acessibilidade: foco visível, redução de movimento, anúncio da fase por leitores de tela, alvos de toque de 44 px e rodapé recolhível no celular.
 
 ## Tecnologias
 
