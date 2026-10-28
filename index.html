@@ -355,6 +355,7 @@
                         <option value="maconha">Maconha</option>
                         <option value="mdma">Sintéticos (MDMA)</option>
                     </select>
+                    <span class="text-[10px] text-slate-400" title="Na realidade, cada situação dura uma escala de tempo diferente">ciclos ajustados a 60 s</span>
                 </div>
             </div>
         </header>
@@ -511,7 +512,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                            <h2 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-mono-tech">Curva Dopaminérgica em Tempo Real</h2>
+                            <h2 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-mono-tech">Curva Dopaminérgica na Simulação</h2>
                         </div>
                         <p class="text-[11px] text-slate-400 mt-0.5">Sincronizada com a luminescência 3D do Núcleo Accumbens e Córtex Pré-Frontal (Clique no gráfico para avançar/retroceder)</p>
                     </div>
@@ -596,7 +597,7 @@
 
                 <!-- Real-Time Brain Structure Telemetry Bars -->
                 <div class="hud-panel rounded-2xl p-4 flex flex-col gap-2.5">
-                    <div class="text-xs font-bold text-white uppercase tracking-wider font-mono-tech">Impacto nas Estruturas em Tempo Real</div>
+                    <div class="text-xs font-bold text-white uppercase tracking-wider font-mono-tech">Impacto nas Estruturas na Simulação</div>
                     <div class="space-y-2.5">
                         <div>
                             <div class="flex justify-between text-[11px] mb-1">
@@ -663,6 +664,26 @@
                     <p id="sub-description" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
                         Recompensa variável intermitente (quase-acerto) dispara rajadas abruptas de dopamina do VTA ao Núcleo Accumbens, seguidas de queda rápida abaixo do nível basal que gera urgência compulsiva.
                     </p>
+                </div>
+
+                <!-- Escala de tempo real e por que a simulação dura 60 segundos -->
+                <div class="bg-slate-950/75 rounded-xl p-3.5 border border-slate-800/90">
+                    <div class="text-[11px] font-mono-tech uppercase text-cyan-400 mb-1">Escala de tempo real</div>
+                    <p class="text-xs sm:text-sm text-slate-200 leading-relaxed"><span id="sub-real-scale" class="font-bold text-cyan-300"></span> <span id="sub-real-scale-note"></span></p>
+                    <details class="mt-2">
+                        <summary class="cursor-pointer text-xs font-semibold text-cyan-300">Por que a simulação dura 60 segundos?</summary>
+                        <div class="mt-2 space-y-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            <p>As substâncias agem em escalas de tempo muito diferentes, de minutos a várias horas, e as apostas não têm uma escala de tempo bem estabelecida.</p>
+                            <p>Por isso o Cortexplora comprime o ciclo completo de todas em 60 segundos. Assim é possível sobrepor duas curvas no Modo Comparativo, sem que uma desapareça em instantes enquanto a outra fica quase parada, e acompanhar a subida, o pico e a queda numa única demonstração de cerca de um minuto.</p>
+                            <p>Os 60 segundos são uma escolha didática. Os tempos e os valores da curva são ilustrativos, não medições, e o tempo exibido na tela não equivale ao tempo real. Ao comparar duas curvas, lembre que na realidade elas duram escalas diferentes.</p>
+                            <p class="text-[11px] text-slate-400 leading-snug">Fontes das escalas reais:
+                                <a href="https://nida.nih.gov/publications/research-reports/cocaine/what-cocaine" target="_blank" rel="noopener" class="text-cyan-300 underline underline-offset-2">NIDA, cocaína e crack</a>;
+                                <a href="https://nida.nih.gov/research-topics/mdma-ecstasy-molly" target="_blank" rel="noopener" class="text-cyan-300 underline underline-offset-2">NIDA, MDMA</a>;
+                                <a href="https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6428a6.htm" target="_blank" rel="noopener" class="text-cyan-300 underline underline-offset-2">CDC, maconha</a>;
+                                <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7345465/" target="_blank" rel="noopener" class="text-cyan-300 underline underline-offset-2">Mackus et al., 2020, álcool</a>.
+                            </p>
+                        </div>
+                    </details>
                 </div>
 
                 <!-- Complete Guide of Brain Regions (Clickable to jump to 3D marker) -->
@@ -740,7 +761,7 @@
                 <div id="footer-extra-timeline" class="footer-extra flex-1 flex flex-col gap-1">
                     <div class="flex items-center justify-between text-[10px] font-mono-tech">
                         <div class="flex items-center gap-2 text-slate-400">
-                            <span class="text-cyan-300 font-semibold">LINHA DO TEMPO — ABSORÇÃO · PICO · QUEDA</span>
+                            <span class="text-cyan-300 font-semibold" title="Os 60 segundos são uma escolha didática: o tempo real varia conforme a substância e a pessoa. Veja a escala real na aba Detalhes.">LINHA DO TEMPO DIDÁTICA (60 s)</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-amber-300 hidden sm:inline">PICO MÁXIMO: <b id="footer-peak-label">450% do basal</b></span>
@@ -1002,6 +1023,8 @@
                 category: 'Hiperativação / Pico Rápido',
                 colorHex: '#F59E0B',
                 secondaryGlowHex: '#FCD34D',
+                realScale: 'Sem escala medida.',
+                realScaleNote: 'Não há uma escala de tempo estabelecida para a dopamina em apostas; a curva é ilustrativa.',
                 tinyName: 'Bets',
                 peakTag: '2º pulso aos 15s',
                 description: 'A incerteza da recompensa intermitente e o efeito de "quase-ganho" disparam pulsos agudos de dopamina do VTA ao Núcleo Accumbens. A queda abrupta abaixo do nível basal ativa a Amígdala (ansiedade) e gera urgência para continuar apostando.',
@@ -1029,6 +1052,8 @@
                 category: 'Hiperativação Extrema',
                 colorHex: '#FF3B30', // Vermelho intenso: distinto do âmbar das Bets (#F59E0B)
                 secondaryGlowHex: '#FF1E56',
+                realScale: 'Minutos.',
+                realScaleNote: 'Fumado, o efeito é quase imediato e o "barato" dura cerca de 5 a 10 minutos (NIDA).',
                 tinyName: 'Crack',
                 peakTag: 'Agulha Explosiva',
                 description: 'Absorção pulmonar ultrarrápida bloqueia massivamente a recaptação de dopamina no Núcleo Accumbens em segundos. O pico explosivo é seguido por uma depleção severa (Crash profundo), hiperativando a Amígdala e desligando o Córtex Pré-Frontal.',
@@ -1055,6 +1080,8 @@
                 category: 'Estimulante Dopaminérgico',
                 colorHex: '#FF2A85',
                 secondaryGlowHex: '#FF758F',
+                realScale: 'Minutos.',
+                realScaleNote: 'Inalada, o início é mais lento e o "barato" dura cerca de 15 a 30 minutos (NIDA).',
                 tinyName: 'Cocaína',
                 peakTag: 'Bloqueio DAT',
                 description: 'Bloqueia os transportadores de dopamina (DAT), mantendo o neurotransmissor acumulado na fenda sináptica do Núcleo Accumbens. Provoca euforia intensa seguida de queda abaixo da linha basal e forte fissura.',
@@ -1082,6 +1109,8 @@
                 colorHex: '#1D3557',
                 chartColorHex: '#3B82F6',
                 secondaryGlowHex: '#3B82F6',
+                realScale: 'Horas.',
+                realScaleNote: 'O corpo elimina o álcool devagar, em média cerca de 0,016% por hora no ar expirado (variação de 0,012 a 0,019), o que faz a eliminação levar horas (Mackus et al., 2020).',
                 tinyName: 'Álcool',
                 peakTag: 'Inibição PFC',
                 description: 'Potencializa a inibição por GABA e reduz o glutamato. Após uma elevação dopaminérgica moderada inicial, desacelera a transmissão neural, afeta o Córtex Parietal/Occipital e apaga progressivamente a luz do Córtex Pré-Frontal (perda do freio inibitório).',
@@ -1109,6 +1138,8 @@
                 category: 'Modulação Canabinoide',
                 colorHex: '#00F5D4',
                 secondaryGlowHex: '#10B981',
+                realScale: 'Minutos.',
+                realScaleNote: 'Fumada, o THC atinge o pico no sangue em 5 a 10 minutos (CDC).',
                 tinyName: 'Maconha',
                 peakTag: 'Ondulatório',
                 description: 'O THC atua nos receptores CB1 no VTA, Córtex Temporal (memória) e Parietal/Occipital (sentidos). Produz um brilho esmeralda ondulatório e contínuo, alterando a percepção de tempo e memória de curto prazo sem crash abrupto severo.',
@@ -1137,6 +1168,8 @@
                 colorHex: '#7209B7',
                 chartColorHex: '#A855F7',
                 secondaryGlowHex: '#F59E0B',
+                realScale: 'Horas.',
+                realScaleNote: 'Os efeitos começam em cerca de 45 minutos, atingem o auge em 15 a 30 minutos e duram em média 3 horas (NIDA).',
                 tinyName: 'MDMA',
                 peakTag: 'Platô Largo',
                 description: 'Inverte os transportadores de serotonina (SERT) e dopamina, inundando difusamente o Córtex Occipital (visão), Parietal (tato/integração) e Amígdala (empatia/emoção) com pulsos roxo-neon e dourados, seguidos de depleção química.',
@@ -2936,6 +2969,8 @@
             document.getElementById('sub-peak-stat').textContent = sub.peakText;
             document.getElementById('sub-peak-stat').style.color = displayColor;
             document.getElementById('sub-description').textContent = sub.description;
+            document.getElementById('sub-real-scale').textContent = sub.realScale;
+            document.getElementById('sub-real-scale-note').textContent = sub.realScaleNote;
 
             const footerPeak = document.getElementById('footer-peak-label');
             if (footerPeak) footerPeak.textContent = `${sub.peakText} do basal`;
@@ -3163,7 +3198,7 @@
             },
             {
                 title: 'Dispare a simulação',
-                body: 'Toque em "Simular evento". A dopamina sobe, atinge um pico e depois cai. Você pode pausar e arrastar a linha do tempo quando quiser.'
+                body: 'Toque em "Simular evento". A dopamina sobe, atinge um pico e depois cai. A simulação dura 60 segundos por escolha didática: o tempo real varia conforme a substância, e a aba Detalhes mostra a escala real.'
             },
             {
                 title: 'Leia a curva e a ciência',

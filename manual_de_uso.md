@@ -29,7 +29,7 @@ Na barra superior central, você pode alternar entre três visualizações difer
     *   **O que faz:** Deixa o modelo 3D do cérebro totalmente livre no centro da tela para você girar, aproximar ou afastar com o mouse (ou com os dedos no celular).
     *   **Como interagir:** Clique e arraste o fundo para girar o cérebro 3D. Use a roda do mouse (ou pinça na tela) para dar zoom. Na lateral direita, um painel mostra a região do cérebro selecionada e um **Mini-Monitor** com o nível de dopamina em tempo real. Ele pode ser recolhido para liberar a tela.
 2.  **📈 2. Mapa de Picos & Gráfico**
-    *   **O que faz:** Abre uma tela ampla com o gráfico detalhado da **Curva Dopaminérgica em Tempo Real** (Eixo Y: quantidade de dopamina; Eixo X: o tempo em segundos).
+    *   **O que faz:** Abre uma tela ampla com o gráfico detalhado da **Curva Dopaminérgica na Simulação** (Eixo Y: quantidade de dopamina; Eixo X: o tempo em segundos).
     *   **O que observar:** O gráfico mostra o pico exato da substância, a descida e o **Alerta de Fissura/Crash** (quando a linha cruza para abaixo da linha pontilhada de equilíbrio normal).
 3.  **🔬 3. Detalhes & Sinapse**
     *   **O que faz:** Explica de forma simples a história e a ciência por trás da substância escolhida e como ela afeta as três regiões principais do cérebro (VTA, Núcleo Accumbens e Córtex Pré-Frontal).

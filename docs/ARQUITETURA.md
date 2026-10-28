@@ -49,7 +49,9 @@ As duas versões carregam exclusivamente arquivos locais; nenhuma requisição �
 
 - **Picos e vales calculados:** `computeCurveExtremes` amostra cada `curveFn` uma única vez na inicialização (`CURVE_SAMPLES = 2000`) e grava o resultado em `sub.extremes`. O vale (crash) é procurado a partir de `CRASH_SEARCH_START = 0.3`, depois da fase de absorção. Rótulos, ranking, mapa rápido, gráficos e os botões "Ir ao Pico" e "Ir ao Crash" usam esses valores; nenhum pico deve ser escrito manualmente no HTML.
 - **Estados de dopamina:** o nível basal é `DOPAMINE_BASELINE = 100` e o limiar de fissura é `CRASH_THRESHOLD = 92`. `getDopamineStatus` classifica o nível em `crash` (abaixo de 92%), `below` (de 92% a 99%), `baseline` (100%) ou `above` (acima de 100%).
-- **Tempo normalizado:** todas as curvas usam o intervalo normalizado de 0 a 1, exibido como 60 segundos (`state.simDuration`). A escala é ilustrativa e não corresponde à duração real dos efeitos.
+- **Tempo normalizado:** todas as curvas usam o intervalo normalizado de 0 a 1, exibido como 60 segundos (`state.simDuration`). A escala é ilustrativa e não corresponde à duração real dos efeitos. A justificativa da escolha (comparação lado a lado no Modo Comparativo e ritmo de cerca de um minuto para acompanhar a subida, o pico e a queda) é exibida ao usuário na página Detalhes.
+- **Escala de tempo real:** cada substância tem `realScale` e `realScaleNote`, exibidos em Detalhes com as fontes: NIDA (cocaína e crack, MDMA), CDC (maconha fumada, MMWR 2014) e Mackus et al., 2020 (eliminação do álcool). Não há escala de tempo estabelecida para a dopamina em apostas, e isso é declarado na interface. A maconha do modelo representa a via fumada.
+- **Ponto em aberto:** os tempos de pico das curvas são parâmetros ilustrativos do modelo. Com a maconha fumada, as fontes indicam pico em cerca de 5 a 10 minutos, antes do início dos efeitos do MDMA (cerca de 45 minutos), mas no modelo o pico da maconha ocorre depois do pico do MDMA. Por isso a interface não afirma que a ordem de rapidez entre as curvas seja fiel à realidade.
 
 ### Comportamentos de interface
 

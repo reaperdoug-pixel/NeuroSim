@@ -36,7 +36,7 @@ O Dopamapa apresenta um modelo cerebral tridimensional gerado proceduralmente e 
 ### Funcionalidades
 
 - Visualização 3D livre do cérebro (rotação e zoom).
-- Gráfico da curva dopaminérgica em tempo real, com indicação de pico e alerta de fissura/crash.
+- Gráfico da curva dopaminérgica na simulação, com indicação de pico e alerta de fissura/crash.
 - Página de detalhes com a ciência por trás de cada substância.
 - Linha do tempo com play/pause e controle manual (scrub).
 - Modo comparativo entre duas substâncias no mesmo cérebro.
